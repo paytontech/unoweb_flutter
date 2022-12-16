@@ -261,10 +261,12 @@ class _MyHomePageState extends State<MyHomePage> {
               Wrap(
                 children: gameData['players'][0]['cards']
                     .map<Widget>((card) => ElevatedButton(
-                          onPressed: () {
-                            playCard(card, 0);
-                            print(gameData['players'][0]['cards']);
-                          },
+                          onPressed: gameData['currentPlayer'] == 0
+                              ? () {
+                                  playCard(card, 0);
+                                  print(gameData['players'][0]['cards']);
+                                }
+                              : null,
                           style: ElevatedButton.styleFrom(
                               backgroundColor: getCardColor(card),
                               minimumSize: Size(40, 100)),
