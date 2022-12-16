@@ -46,7 +46,8 @@ class _MyHomePageState extends State<MyHomePage> {
   Map gameData = {
     'players': [],
     'currentPlayer': 0,
-    'stack': {'current': {}, 'prev': []}
+    'stack': {'current': {}, 'prev': []},
+    'winState': {'winnerChosen': false, 'winner': {}}
   };
   List<Map> cards = [];
   void _incrementCounter() {
@@ -144,6 +145,14 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void updatePlayer() {
+    for (var player in gameData['players']) {
+      if (player['cards'].isEmpty) {
+        setState(() {
+          gameData['winState']['winnerChosen'] = true;
+          gameData['winState']['winner'] = player;
+        });
+      }
+    }
     if (gameData['currentPlayer'] >= (gameData['players'].length - 1)) {
       print("max players");
       setState(() {
@@ -185,81 +194,122 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
+    Widget game;
+    if (gameData['winState']['winnerChosen'] == true) {
+      game = Scaffold(
+        appBar: AppBar(title: const Text("Game Over!")),
+        body: Center(
+            child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            if (gameData['currentPlayer'] > 0)
-              Text("Current Player: ${gameData['currentPlayer']}"),
-            if (gameData['currentPlayer'] == 0)
+            if (gameData['winState']['winner']['bot'])
               Text(
-                "Your Turn!",
-                style:
-                    TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
+                "Bot ${gameData['winState']['winner']['id']} has won!",
+                style: TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 50),
+              )
+            else
+              Text(
+                "You Win!",
+                style: TextStyle(
+                    color: Colors.green,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 50),
               ),
-            const Text(
-              "Your cards",
-              style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-            ),
-            const Text("Click on a card to play it"),
-            const SizedBox(
-              width: 0,
-              height: 20,
-            ),
-            Wrap(
-              children: gameData['players'][0]['cards']
-                  .map<Widget>((card) => ElevatedButton(
-                        onPressed: () {
-                          playCard(card, 0);
-                          print(gameData['players'][0]['cards']);
-                        },
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: getCardColor(card),
-                            minimumSize: Size(40, 100)),
-                        child: Text(
-                          card['color'] + "\n" + card['number'].toString(),
-                          textAlign: TextAlign.center,
-                        ),
-                      ))
-                  .toList(),
-            ),
-            TextButton(
-                onPressed: () {
-                  drawCard(0);
-                },
-                child: const Text("Draw Card")),
-            const SizedBox(
-              width: 0,
-              height: 20,
-            ),
-            const Text(
-              "Current Card",
-              style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-            ),
-            const Text("This is the card at the top of the stack"),
-            const SizedBox(
-              width: 0,
-              height: 20,
-            ),
             ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: getCardColor(gameData['stack']['current']),
-                  minimumSize: Size(40, 100)),
-              child: Text(
-                gameData['stack']['current']['color'] +
-                    "\n" +
-                    gameData['stack']['current']['number'].toString(),
-                textAlign: TextAlign.center,
-              ),
-            )
+                onPressed: () {
+                  setState(() {
+                    gameData['players'] = [];
+                    gameData['winState']['winner'] = {};
+                    dealCards(4);
+                    gameData['winState']['winnerChosen'] = false;
+                    gameData['currentPlayer'] = 0;
+                  });
+                },
+                child: Text("Restart"))
           ],
+        )),
+      );
+    } else {
+      game = Scaffold(
+        appBar: AppBar(
+          title: Text(widget.title),
         ),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
-    );
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              if (gameData['currentPlayer'] > 0)
+                Text("Current Player: ${gameData['currentPlayer']}"),
+              if (gameData['currentPlayer'] == 0)
+                const Text(
+                  "Your Turn!",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.grey),
+                ),
+              const Text(
+                "Your cards",
+                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+              ),
+              const Text("Click on a card to play it"),
+              const SizedBox(
+                width: 0,
+                height: 20,
+              ),
+              Wrap(
+                children: gameData['players'][0]['cards']
+                    .map<Widget>((card) => ElevatedButton(
+                          onPressed: () {
+                            playCard(card, 0);
+                            print(gameData['players'][0]['cards']);
+                          },
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: getCardColor(card),
+                              minimumSize: Size(40, 100)),
+                          child: Text(
+                            card['color'] + "\n" + card['number'].toString(),
+                            textAlign: TextAlign.center,
+                          ),
+                        ))
+                    .toList(),
+              ),
+              TextButton(
+                  onPressed: () {
+                    drawCard(0);
+                  },
+                  child: const Text("Draw Card")),
+              const SizedBox(
+                width: 0,
+                height: 20,
+              ),
+              const Text(
+                "Current Card",
+                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+              ),
+              const Text("This is the card at the top of the stack"),
+              const SizedBox(
+                width: 0,
+                height: 20,
+              ),
+              ElevatedButton(
+                onPressed: () {},
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: getCardColor(gameData['stack']['current']),
+                    minimumSize: Size(40, 100)),
+                child: Text(
+                  gameData['stack']['current']['color'] +
+                      "\n" +
+                      gameData['stack']['current']['number'].toString(),
+                  textAlign: TextAlign.center,
+                ),
+              )
+            ],
+          ),
+        ), // This trailing comma makes auto-formatting nicer for build methods.
+      );
+    }
+    return Container(child: game);
   }
 }
