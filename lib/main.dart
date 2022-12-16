@@ -123,6 +123,7 @@ class _MyHomePageState extends State<MyHomePage> {
           card['number'] == gameData['stack']['current']['number']) {
         //valid
         setState(() {
+          gameData['stack']['prev'].add(gameData['stack']['current']);
           gameData['stack']['current'] = card;
           gameData['players'][playerID]['cards'].remove(card);
         });
