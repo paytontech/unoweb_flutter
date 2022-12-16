@@ -42,7 +42,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
   Map gameData = {
     'players': [],
     'currentPlayer': 0,
@@ -50,16 +49,7 @@ class _MyHomePageState extends State<MyHomePage> {
     'winState': {'winnerChosen': false, 'winner': {}}
   };
   List<Map> cards = [];
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
+  bool invalidAttemptError = false;
 
   void genCards() {
     for (var i = 0; i < 10; i++) {
@@ -125,7 +115,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  void playCard(card, playerID) {
+  void playCard(card, playerID) async {
     print("play attempted: $playerID");
     if (playerID == gameData['currentPlayer']) {
       //valid
@@ -138,9 +128,28 @@ class _MyHomePageState extends State<MyHomePage> {
         });
         updatePlayer();
         botPlay();
+      } else {
+        if (gameData['currentPlayer'] == playerID) {
+          setState(() {
+            invalidAttemptError = true;
+          });
+          await Future.delayed(const Duration(seconds: 3));
+          setState(() {
+            invalidAttemptError = false;
+          });
+        }
       }
     } else {
       //invalid
+      if (gameData['currentPlayer'] == playerID) {
+        setState(() {
+          invalidAttemptError = true;
+        });
+        await Future.delayed(const Duration(seconds: 3));
+        setState(() {
+          invalidAttemptError = false;
+        });
+      }
     }
   }
 
@@ -184,12 +193,14 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void drawCard(playerID) {
-    setState(() {
-      gameData['players'][playerID]['cards']
-          .add(cards[Random().nextInt(cards.length)]);
+    if (gameData['currentPlayer'] == playerID) {
+      setState(() {
+        gameData['players'][playerID]['cards']
+            .add(cards[Random().nextInt(cards.length)]);
+      });
       updatePlayer();
       botPlay();
-    });
+    }
   }
 
   @override
@@ -254,6 +265,12 @@ class _MyHomePageState extends State<MyHomePage> {
                 style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
               ),
               const Text("Click on a card to play it"),
+              if (invalidAttemptError)
+                Text(
+                  "Invalid Play!",
+                  style:
+                      TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                ),
               const SizedBox(
                 width: 0,
                 height: 20,
@@ -306,6 +323,21 @@ class _MyHomePageState extends State<MyHomePage> {
                       gameData['stack']['current']['number'].toString(),
                   textAlign: TextAlign.center,
                 ),
+              ),
+              Wrap(
+                children: gameData['players']
+                    .map<Widget>((player) => Padding(
+                          padding: const EdgeInsets.all(15),
+                          child: player['bot']
+                              ? Text(
+                                  "Bot ${player['id']}\n${player['cards'].length} card(s) left",
+                                  textAlign: TextAlign.center)
+                              : Text(
+                                  "You\n${player['cards'].length} card(s) left",
+                                  textAlign: TextAlign.center,
+                                ),
+                        ))
+                    .toList(),
               )
             ],
           ),
