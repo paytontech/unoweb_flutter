@@ -317,7 +317,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 onPressed: () {},
                 style: ElevatedButton.styleFrom(
                     backgroundColor: getCardColor(gameData['stack']['current']),
-                    minimumSize: Size(40, 100)),
+                    minimumSize: Size(40, 100),
+                    alignment: Alignment.center),
                 child: Text(
                   gameData['stack']['current']['color'] +
                       "\n" +
