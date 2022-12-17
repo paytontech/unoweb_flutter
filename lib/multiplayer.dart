@@ -24,6 +24,7 @@ class _MultiplayerPageOneState extends State<MultiplayerPageOne> {
   }
 
   String textCode = "";
+  String username1 = "";
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,6 +35,22 @@ class _MultiplayerPageOneState extends State<MultiplayerPageOne> {
         children: <Widget>[
           const Text(
               "Would you like to create a lobby, or join an already existing lobby?"),
+          Padding(
+            padding: EdgeInsets.all(100),
+            child: TextFormField(
+              decoration: const InputDecoration(
+                border: UnderlineInputBorder(),
+                labelText: 'Enter a username',
+              ),
+              onChanged: ((value) {
+                setState(() {
+                  setState(() {
+                    username1 = value;
+                  });
+                });
+              }),
+            ),
+          ),
           const SizedBox(
             height: 50,
             width: 0,
@@ -44,7 +61,9 @@ class _MultiplayerPageOneState extends State<MultiplayerPageOne> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const MultiplayerGame()));
+                        builder: (context) => MultiplayerGame(
+                              username: username1,
+                            )));
               },
               child: Text("Create")),
           const SizedBox(
@@ -75,6 +94,7 @@ class _MultiplayerPageOneState extends State<MultiplayerPageOne> {
                     MaterialPageRoute(
                         builder: (context) => MultiplayerGame(
                               gameCode: textCode,
+                              username: username1,
                             )));
               },
               child: const Text("Join"))
@@ -85,9 +105,10 @@ class _MultiplayerPageOneState extends State<MultiplayerPageOne> {
 }
 
 class MultiplayerGame extends StatefulWidget {
-  const MultiplayerGame({super.key, this.gameCode});
+  const MultiplayerGame({super.key, this.gameCode, required this.username});
 
   final String? gameCode;
+  final String username;
 
   @override
   State<MultiplayerGame> createState() => _MultiplayerGameState();
@@ -95,7 +116,8 @@ class MultiplayerGame extends StatefulWidget {
 
 class _MultiplayerGameState extends State<MultiplayerGame> {
   final db = FirebaseFirestore.instance;
-
+  int next(int min, int max) => min + Random().nextInt(max - min);
+  int code = 100000 + Random().nextInt(999999 - 100000);
   Map clientState = {'host': false, 'username': ''};
   Map gameData = {
     'players': [],
@@ -140,7 +162,6 @@ class _MultiplayerGameState extends State<MultiplayerGame> {
         {'color': 'wild', 'type': '+4', 'special': true, 'chosenColor': ''});
   }
 
-  int next(int min, int max) => min + Random().nextInt(max - min);
   @override
   void initState() {
     super.initState();
@@ -151,8 +172,8 @@ class _MultiplayerGameState extends State<MultiplayerGame> {
       setState(() {
         clientState['host'] = true;
       });
-      int code = next(100000, 999999);
-      dealCards(1);
+
+      addPlayer(widget.username);
       db.collection("games").doc(code.toString()).set(<String, dynamic>{
         'players': [],
         'gameData': gameData,
@@ -342,21 +363,26 @@ class _MultiplayerGameState extends State<MultiplayerGame> {
     }
   }
 
-  void dealCards(playerCount) {
-    gameData['stack']['current'] = cards[Random().nextInt(cards.length)];
+  void updateFirebase() {
+    db
+        .collection("games")
+        .doc(code.toString())
+        .set(<String, dynamic>{'gameData': gameData}, SetOptions(merge: true));
+  }
 
-    for (var i = 0; i < playerCount; i++) {
-      if (i == 0) {
-        gameData['players'].add({'id': i, 'cards': [], 'bot': false});
-      } else {
-        gameData['players'].add({'id': i, 'cards': [], 'bot': true});
-      }
-      for (var z = 0; z < 7; z++) {
-        gameData['players'][i]['cards']
-            .add(cards[Random().nextInt(cards.length)]);
-      }
-      print(gameData['players'].length);
+  void addPlayer(username) {
+    gameData['stack']['current'] = cards[Random().nextInt(cards.length)];
+    gameData['players'].add({
+      'id': gameData['players'].length,
+      'cards': [],
+      'username': widget.username
+    });
+    for (var z = 0; z < 7; z++) {
+      gameData['players'][gameData['players'].length - 1]['cards']
+          .add(cards[Random().nextInt(cards.length)]);
     }
+    updateFirebase();
+    print(gameData['players'].length);
   }
 
   void drawCard(playerID) {
@@ -399,9 +425,7 @@ class _MultiplayerGameState extends State<MultiplayerGame> {
             ElevatedButton(
                 onPressed: () {
                   setState(() {
-                    gameData['players'] = [];
                     gameData['winState']['winner'] = {};
-                    dealCards(4);
                     gameData['winState']['winnerChosen'] = false;
                     gameData['currentPlayer'] = 0;
                   });
@@ -420,6 +444,7 @@ class _MultiplayerGameState extends State<MultiplayerGame> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
+              Text("Players: ${gameData['players'].length.toString()}"),
               if (gameData['currentPlayer'] > 0)
                 Text("Current Player: ${gameData['currentPlayer']}"),
               if (gameData['currentPlayer'] == 0)
