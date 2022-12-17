@@ -21,6 +21,6 @@ This is purely here for me to track my progress.
 - [x] Find a suitable websocket library (Socket.IO)
 - [ ] Get game data syncing between clients
 - [ ] Add extra comfort features (usernames, profile pictures, rules, etc.)
-<hr>
+
 ## My Journey with Multiplayer
 Alright, if you don't like reading my ramblings or just reading about code in general, stop reading here. As I start to work on this more, I'll write stuff about my experience here I think.
