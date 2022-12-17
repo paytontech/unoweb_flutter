@@ -18,7 +18,7 @@ Honestly, i don't really care too much about this, but because bots are a thing,
 ## TODO
 This is purely here for me to track my progress.
 - [ ] Prepare base game for multiplayer (basically just remove any reliance on the render system that the player is ID 0, and implement a way for client to know which player is theirs. this will likely tie in with auth system)
-- [x] Find a suitable websocket library (Socket.IO)
+- [x] -Find a suitable websocket library (Socket.IO)-
 - [ ] Get game data syncing between clients
 - [ ] Add extra comfort features (usernames, profile pictures, rules, etc.)
 <br>

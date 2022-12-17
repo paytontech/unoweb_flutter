@@ -15,6 +15,14 @@ class MultiplayerPageOne extends StatefulWidget {
 }
 
 class _MultiplayerPageOneState extends State<MultiplayerPageOne> {
+  @override
+  void initState() {
+    super.initState();
+    Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  }
+
   String textCode = "";
   @override
   Widget build(BuildContext context) {
@@ -33,8 +41,10 @@ class _MultiplayerPageOneState extends State<MultiplayerPageOne> {
           ElevatedButton(
               onPressed: () {
                 //create a lobby
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => MultiplayerGame()));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const MultiplayerGame()));
               },
               child: Text("Create")),
           const SizedBox(
@@ -91,7 +101,8 @@ class _MultiplayerGameState extends State<MultiplayerGame> {
     'players': [],
     'currentPlayer': 0,
     'stack': {'current': {}, 'prev': []},
-    'winState': {'winnerChosen': false, 'winner': {}}
+    'winState': {'winnerChosen': false, 'winner': {}},
+    'gameCode': 0
   };
   List<Map> cards = [];
   bool invalidAttemptError = false;
@@ -129,16 +140,24 @@ class _MultiplayerGameState extends State<MultiplayerGame> {
         {'color': 'wild', 'type': '+4', 'special': true, 'chosenColor': ''});
   }
 
+  int next(int min, int max) => min + Random().nextInt(max - min);
   @override
-  void initState() async {
+  void initState() {
     super.initState();
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+    genCards();
+
     if (widget.gameCode == null) {
       print("this client is host");
       setState(() {
         clientState['host'] = true;
+      });
+      int code = next(100000, 999999);
+      dealCards(1);
+      db.collection("games").doc(code.toString()).set(<String, dynamic>{
+        'players': [],
+        'gameData': gameData,
+        'code': code,
+        'dateCreated': DateTime.now()
       });
     } else {
       print("This client is not a host!! woohoo!");
@@ -425,7 +444,7 @@ class _MultiplayerGameState extends State<MultiplayerGame> {
                 height: 20,
               ),
               Wrap(
-                children: gameData['players'][0]['cards']
+                children: gameData['players'][0]?['cards']
                     .map<Widget>((card) => ElevatedButton(
                           onPressed: gameData['currentPlayer'] == 0
                               ? () {
