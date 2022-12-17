@@ -29,8 +29,9 @@ class _MultiplayerPageOneState extends State<MultiplayerPageOne> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Choose an option")),
-      body: Center(
-          child: Column(
+      body: SingleChildScrollView(
+          child: Center(
+              child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           const Text(
@@ -99,7 +100,7 @@ class _MultiplayerPageOneState extends State<MultiplayerPageOne> {
               },
               child: const Text("Join"))
         ],
-      )),
+      ))),
     );
   }
 }
@@ -182,6 +183,8 @@ class _MultiplayerGameState extends State<MultiplayerGame> {
       });
     } else {
       print("This client is not a host!! woohoo!");
+      print(db.collection("games").doc(widget.gameCode.toString()).get());
+      code = int.parse(widget.gameCode.toString());
     }
   }
 
@@ -214,63 +217,6 @@ class _MultiplayerGameState extends State<MultiplayerGame> {
       }
     } else {
       return Colors.black;
-    }
-  }
-
-  void botPlay() async {
-    print("bot attempting play..");
-    if (gameData['currentPlayer'] > 0) {
-      Map bot = gameData['players'][gameData['currentPlayer']];
-      List<Map> possibleCards = [];
-      for (var card in bot['cards']) {
-        if (card['color'] == gameData['stack']['current']['color'] ||
-            card['number'] == gameData['stack']['current']['number'] ||
-            (card['special'] && card['color'] == 'wild') ||
-            (card['color'] == gameData['stack']['current']['chosenColor'])) {
-          possibleCards.add(card);
-        }
-      }
-
-      if (possibleCards.isEmpty) {
-        print('bot has no cards');
-        drawCard(bot['id']);
-        botPlay();
-      } else {
-        //cards available
-        await Future.delayed(const Duration(seconds: 3));
-        Map chosenCard = possibleCards[Random().nextInt(possibleCards.length)];
-        Map checkedCard = chosenCard;
-        if (chosenCard['color'] == 'wild') {
-          int red = 0;
-          int blue = 0;
-          int green = 0;
-          int yellow = 0;
-          for (var card in bot['cards']) {
-            switch (card['color']) {
-              case 'red':
-                red += 1;
-                break;
-              case 'blue':
-                blue += 1;
-                break;
-              case 'green':
-                green += 1;
-                break;
-              case 'yellow':
-                yellow += 1;
-                break;
-            }
-            int highest = [red, blue, green, yellow].reduce(max);
-            if (red == highest) checkedCard['chosenColor'] = 'red';
-            if (blue == highest) checkedCard['chosenColor'] = 'blue';
-            if (yellow == highest) checkedCard['chosenColor'] = 'yellow';
-            if (green == highest) checkedCard['chosenColor'] = 'green';
-          }
-        }
-        playCard(checkedCard, bot['id']);
-      }
-    } else {
-      print("bot cannot play!");
     }
   }
 
@@ -307,7 +253,6 @@ class _MultiplayerGameState extends State<MultiplayerGame> {
           gameData['players'][playerID]['cards'].remove(card);
         });
         updatePlayer();
-        botPlay();
       } else {
         if (gameData['currentPlayer'] == playerID) {
           setState(() {
@@ -392,7 +337,6 @@ class _MultiplayerGameState extends State<MultiplayerGame> {
             .add(cards[Random().nextInt(cards.length)]);
       });
       updatePlayer();
-      botPlay();
     }
   }
 
@@ -444,6 +388,7 @@ class _MultiplayerGameState extends State<MultiplayerGame> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
+              Text("Game Code: ${code}"),
               Text("Players: ${gameData['players'].length.toString()}"),
               if (gameData['currentPlayer'] > 0)
                 Text("Current Player: ${gameData['currentPlayer']}"),
@@ -579,14 +524,10 @@ class _MultiplayerGameState extends State<MultiplayerGame> {
                 children: gameData['players']
                     .map<Widget>((player) => Padding(
                           padding: const EdgeInsets.all(15),
-                          child: player['bot']
-                              ? Text(
-                                  "Bot ${player['id']}\n${player['cards'].length} card(s) left",
-                                  textAlign: TextAlign.center)
-                              : Text(
-                                  "You\n${player['cards'].length} card(s) left",
-                                  textAlign: TextAlign.center,
-                                ),
+                          child: Text(
+                            "You\n${player['cards'].length} card(s) left",
+                            textAlign: TextAlign.center,
+                          ),
                         ))
                     .toList(),
               )
