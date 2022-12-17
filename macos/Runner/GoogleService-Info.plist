@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>467306095090-ov798f6l4274fecs9qd4a2b5a813kn3l.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.467306095090-ov798f6l4274fecs9qd4a2b5a813kn3l</string>
+	<key>API_KEY</key>
+	<string>AIzaSyDFdCNpgEvVi7keWc8UAzFWaO34eRMUe9c</string>
+	<key>GCM_SENDER_ID</key>
+	<string>467306095090</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.unoweb</string>
+	<key>PROJECT_ID</key>
+	<string>unoweb-mp-discovery</string>
+	<key>STORAGE_BUCKET</key>
+	<string>unoweb-mp-discovery.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:467306095090:ios:81172985a66bc804d2cb6b</string>
+</dict>
+</plist>
