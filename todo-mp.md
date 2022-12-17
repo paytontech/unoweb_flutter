@@ -24,3 +24,5 @@ This is purely here for me to track my progress.
 
 ## My Journey with Multiplayer
 Alright, if you don't like reading my ramblings or just reading about code in general, stop reading here. As I start to work on this more, I'll write stuff about my experience here I think.
+
+While I was beginning my work on multiplayer for this, I realized that there are not very many WebSocket libraries for Dart/Flutter. The very few WebSocket libraries that do exist have little-to-no or very bad documentation. I don't know why I didn't do this initially, but I'm just going to use Firestore for this. It is so much easier than WebSockets, and has great documentation.
