@@ -119,7 +119,12 @@ class _MultiplayerGameState extends State<MultiplayerGame> {
   final db = FirebaseFirestore.instance;
   int next(int min, int max) => min + Random().nextInt(max - min);
   int code = 100000 + Random().nextInt(999999 - 100000);
-  Map clientState = {'host': false, 'username': ''};
+  Map clientState = {
+    'host': false,
+    'username': '',
+    'playerid': 0,
+    'gotInitialData': false
+  };
   Map gameData = {
     'players': [],
     'currentPlayer': 0,
@@ -180,11 +185,16 @@ class _MultiplayerGameState extends State<MultiplayerGame> {
         'gameData': gameData,
         'code': code,
         'dateCreated': DateTime.now()
+      }).then((value) {
+        setState(() {
+          gameData['gotInitialData'] = true;
+        });
       });
     } else {
+      addPlayer(widget.username);
       print("This client is not a host!! woohoo!");
-      print(db.collection("games").doc(widget.gameCode.toString()).get());
       code = int.parse(widget.gameCode.toString());
+      print(db.collection("games").doc(code.toString()).get());
     }
   }
 
@@ -317,6 +327,7 @@ class _MultiplayerGameState extends State<MultiplayerGame> {
 
   void addPlayer(username) {
     gameData['stack']['current'] = cards[Random().nextInt(cards.length)];
+    clientState['playerid'] = gameData['players'].length;
     gameData['players'].add({
       'id': gameData['players'].length,
       'cards': [],
@@ -378,7 +389,7 @@ class _MultiplayerGameState extends State<MultiplayerGame> {
           ],
         )),
       );
-    } else {
+    } else if (clientState['gotInitialData']) {
       game = Scaffold(
         appBar: AppBar(
           title: Text("unoweb"),
@@ -414,11 +425,12 @@ class _MultiplayerGameState extends State<MultiplayerGame> {
                 height: 20,
               ),
               Wrap(
-                children: gameData['players'][0]?['cards']
+                children: gameData['players'][clientState['playerid']]?['cards']
                     .map<Widget>((card) => ElevatedButton(
                           onPressed: gameData['currentPlayer'] == 0
                               ? () {
-                                  print(gameData['players'][0]['cards']);
+                                  print(gameData['players']
+                                      [gameData['playerid']]['cards']);
                                   playCard(card, 0);
                                 }
                               : null,
@@ -535,6 +547,8 @@ class _MultiplayerGameState extends State<MultiplayerGame> {
           ),
         )), // This trailing comma makes auto-formatting nicer for build methods.
       );
+    } else {
+      game = Text("Loading..");
     }
     return Container(child: game);
   }
