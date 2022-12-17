@@ -3,7 +3,7 @@ I intend on adding online multiplayer to this game, this is how I intend to do i
 
 ## Architecture
 ### The basics
-I neither have the money nor patience to set up servers for this thing which I'll likely stop maintaining within the month, so it's going to be Peer-To-Peer multiplayer using WebSockets.
+I neither have the money nor patience to set up servers for this thing which I'll likely stop maintaining within the month, so it's going to be ~~Peer-To-Peer~~ multiplayer using ~~WebSockets~~ Firestore.
 
 When creating a room, the game generates a 6-digit code that others can use to join the room. I really don't know how to do discovery, so this part will be done using something like Firebase. When a user creates a room, the game generates a code and puts that, along with a WebSocket URL, on Firestore, which others can access.
 
