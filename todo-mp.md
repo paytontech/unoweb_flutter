@@ -10,7 +10,7 @@ When creating a room, the game generates a 6-digit code that others can use to j
 ### Sync
 Undoubtedly the most important & really the point of online multiplayer is syncing game states between players. I hope my method for doing so will be simple, for I have no other way of doing this.
 
-Let's say the current player is a player with the ID of 0. When the player makes a move (plays/draws a card) the player's client will update their own gameData object, and then using something like Socket.IO, will broadcast that gameData object to all of the other clients. The other clients will accept this gameData object and render it.
+Let's say the current player is a player with the ID of 0. When the player makes a move (plays/draws a card) the player's client will update their own gameData object, and then using something like Socket.IO, will broadcast that gameData object to all of the other clients. The other clients will accept this gameData object without question and render it. This is peak security.
 
 ### Accounts/Authentication
 Honestly, i don't really care too much about this, but because bots are a thing, I'll probably just use Firebase Auth. Since I'm using Firebase already for game discovery, this shouldn't be all that hard to implement.
