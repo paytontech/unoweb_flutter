@@ -18,9 +18,9 @@ Honestly, i don't really care too much about this, but because bots are a thing,
 ## TODO
 This is purely here for me to track my progress.
 - [ ] Prepare base game for multiplayer (basically just remove any reliance on the render system that the player is ID 0, and implement a way for client to know which player is theirs. this will likely tie in with auth system)
-- [x] -Find a suitable websocket library (Socket.IO)-
+- [x] ~~Find a suitable websocket library (Socket.IO)~~ (no good websocket libraries for Dart/Flutter. will use Firestore)
 - [ ] Get game data syncing between clients
 - [ ] Add extra comfort features (usernames, profile pictures, rules, etc.)
-<br>
+
 ## My Journey with Multiplayer
 Alright, if you don't like reading my ramblings or just reading about code in general, stop reading here. As I start to work on this more, I'll write stuff about my experience here I think.
