@@ -175,9 +175,7 @@ class _MultiplayerGameState extends State<MultiplayerGame> {
 
     if (widget.gameCode == null) {
       print("this client is host");
-      setState(() {
-        clientState['host'] = true;
-      });
+      clientState['host'] = true;
 
       addPlayer(widget.username);
       db.collection("games").doc(code.toString()).set(<String, dynamic>{
@@ -185,16 +183,18 @@ class _MultiplayerGameState extends State<MultiplayerGame> {
         'gameData': gameData,
         'code': code,
         'dateCreated': DateTime.now()
-      }).then((value) {
+      }).whenComplete(() {
+        print("complete");
         setState(() {
-          gameData['gotInitialData'] = true;
+          clientState['gotInitialData'] = true;
         });
       });
     } else {
-      addPlayer(widget.username);
       print("This client is not a host!! woohoo!");
       code = int.parse(widget.gameCode.toString());
-      print(db.collection("games").doc(code.toString()).get());
+      addPlayer(widget.username);
+      updateFirebase();
+      clientState['gotInitialData'] = true;
     }
   }
 
@@ -323,6 +323,13 @@ class _MultiplayerGameState extends State<MultiplayerGame> {
         .collection("games")
         .doc(code.toString())
         .set(<String, dynamic>{'gameData': gameData}, SetOptions(merge: true));
+    db.collection("games").doc(code.toString()).get().then((value) {
+      setState(() {
+        var data = value.data() as Map<String, dynamic>;
+        gameData = data['gameData'];
+      });
+      print(gameData);
+    });
   }
 
   void addPlayer(username) {
@@ -334,7 +341,7 @@ class _MultiplayerGameState extends State<MultiplayerGame> {
       'username': widget.username
     });
     for (var z = 0; z < 7; z++) {
-      gameData['players'][gameData['players'].length - 1]['cards']
+      gameData['players'][clientState['playerid']]['cards']
           .add(cards[Random().nextInt(cards.length)]);
     }
     updateFirebase();
