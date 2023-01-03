@@ -1,8 +1,8 @@
+import 'dart:convert';
 import 'dart:math';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'multiplayer.dart';
 
 void main() {
   runApp(const MyApp());
@@ -139,14 +139,16 @@ class _MyHomePageState extends State<MyHomePage> {
       }
 
       if (possibleCards.isEmpty) {
+        await Future.delayed(const Duration(seconds: 3));
         print('bot has no cards');
         drawCard(bot['id']);
         botPlay();
       } else {
         //cards available
-        await Future.delayed(const Duration(seconds: 3));
+
         Map chosenCard = possibleCards[Random().nextInt(possibleCards.length)];
-        Map checkedCard = chosenCard;
+        Map checkedCard = Map.from(chosenCard);
+
         if (chosenCard['color'] == 'wild') {
           int red = 0;
           int blue = 0;
@@ -172,8 +174,10 @@ class _MyHomePageState extends State<MyHomePage> {
             if (blue == highest) checkedCard['chosenColor'] = 'blue';
             if (yellow == highest) checkedCard['chosenColor'] = 'yellow';
             if (green == highest) checkedCard['chosenColor'] = 'green';
+            print("botplay chosencard: ${chosenCard}");
           }
         }
+        await Future.delayed(const Duration(seconds: 3));
         playCard(checkedCard, bot['id']);
       }
     } else {
@@ -298,6 +302,17 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  bool canPlayCard(card) {
+    if (card['color'] == gameData['stack']['current']['color'] ||
+        card['number'] == gameData['stack']['current']['number'] ||
+        (card['special'] && card['color'] == 'wild') ||
+        (card['color'] == gameData['stack']['current']['chosenColor'])) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     Widget game;
@@ -349,12 +364,7 @@ class _MyHomePageState extends State<MyHomePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const MultiplayerPageOne()));
-                  },
+                  onPressed: () {},
                   child: const Text("New! Try Multiplayer [Beta]")),
               if (gameData['currentPlayer'] > 0)
                 Text("Current Player: ${gameData['currentPlayer']}"),
@@ -381,74 +391,86 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               Wrap(
                 children: gameData['players'][0]['cards']
-                    .map<Widget>((card) => ElevatedButton(
-                          onPressed: gameData['currentPlayer'] == 0
-                              ? () {
-                                  print(gameData['players'][0]['cards']);
-                                  playCard(card, 0);
-                                }
-                              : null,
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: getCardColor(card),
-                              minimumSize: Size(50, 120)),
-                          child: !card['special']
-                              ? Text(
-                                  "${card['color']}\n${card['number'].toString()}",
-                                  textAlign: TextAlign.center,
-                                )
-                              : !(card['chosenColor'] == '')
-                                  ? Text(
-                                      "${card['color']}\n${card['type']}",
-                                      textAlign: TextAlign.center,
-                                    )
-                                  : Column(children: [
-                                      Text("${card['color']} ${card['type']}"),
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            card['chosenColor'] = 'red';
-                                          });
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.red,
-                                            minimumSize: Size(80, 20)),
-                                        child: const Text("Red"),
-                                      ),
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            card['chosenColor'] = 'blue';
-                                          });
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.blue,
-                                            minimumSize: Size(80, 20)),
-                                        child: const Text("Blue"),
-                                      ),
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            card['chosenColor'] = 'green';
-                                          });
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.green,
-                                            minimumSize: Size(80, 20)),
-                                        child: const Text("Green"),
-                                      ),
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            card['chosenColor'] = 'yellow';
-                                          });
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                            backgroundColor: Color.fromARGB(
-                                                255, 153, 138, 0),
-                                            minimumSize: Size(80, 20)),
-                                        child: const Text("Yellow"),
-                                      ),
-                                    ]),
+                    .map<Widget>((card) => Padding(
+                          padding: const EdgeInsets.all(2.0),
+                          child: ElevatedButton(
+                            onPressed: (gameData['currentPlayer'] == 0)
+                                ? () {
+                                    print(gameData['players'][0]['cards']);
+                                    playCard(card, 0);
+                                  }
+                                : null,
+                            style: canPlayCard(card)
+                                ? ElevatedButton.styleFrom(
+                                    backgroundColor: getCardColor(card),
+                                    minimumSize: Size(50, 120),
+                                    shadowColor: getCardColor(card),
+                                    elevation: 20.0,
+                                  )
+                                : ElevatedButton.styleFrom(
+                                    backgroundColor:
+                                        getCardColor(card).withOpacity(0.3),
+                                    minimumSize: Size(50, 120)),
+                            child: !card['special']
+                                ? Text(
+                                    "${card['color']}\n${card['number'].toString()}",
+                                    textAlign: TextAlign.center,
+                                  )
+                                : !(card['chosenColor'] == '')
+                                    ? Text(
+                                        "${card['color']}\n${card['type']}",
+                                        textAlign: TextAlign.center,
+                                      )
+                                    : Column(children: [
+                                        Text(
+                                            "${card['color']} ${card['type']}"),
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            setState(() {
+                                              card['chosenColor'] = 'red';
+                                            });
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.red,
+                                              minimumSize: Size(80, 20)),
+                                          child: const Text("Red"),
+                                        ),
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            setState(() {
+                                              card['chosenColor'] = 'blue';
+                                            });
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.blue,
+                                              minimumSize: Size(80, 20)),
+                                          child: const Text("Blue"),
+                                        ),
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            setState(() {
+                                              card['chosenColor'] = 'green';
+                                            });
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.green,
+                                              minimumSize: Size(80, 20)),
+                                          child: const Text("Green"),
+                                        ),
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            setState(() {
+                                              card['chosenColor'] = 'yellow';
+                                            });
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                              backgroundColor: Color.fromARGB(
+                                                  255, 153, 138, 0),
+                                              minimumSize: Size(80, 20)),
+                                          child: const Text("Yellow"),
+                                        ),
+                                      ]),
+                          ),
                         ))
                     .toList(),
               ),
