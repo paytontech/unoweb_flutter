@@ -3,6 +3,7 @@ import 'dart:math';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:vibration/vibration.dart';
 
 void main() {
   runApp(const MyApp());
@@ -42,7 +43,7 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   Map gameData = {
     'players': [],
     'currentPlayer': 0,
@@ -51,6 +52,11 @@ class _MyHomePageState extends State<MyHomePage> {
   };
   List<Map> cards = [];
   bool invalidAttemptError = false;
+  Color bg = Colors.white;
+  late AnimationController _controller;
+  late Animation<Color?> _color;
+  ColorTween fadeToRed = ColorTween(begin: Colors.white, end: Colors.red);
+  ColorTween fadeToWhite = ColorTween(begin: Colors.red, end: Colors.white);
 
   void genCards() {
     for (var i = 0; i < 10; i++) {
@@ -90,6 +96,19 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     genCards();
     dealCards(4);
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 250),
+      vsync: this,
+    );
+    _color =
+        ColorTween(begin: Colors.white, end: Color.fromARGB(255, 85, 255, 161))
+            .animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   Color getCardColor(card) {
@@ -252,7 +271,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  void updatePlayer() {
+  void updatePlayer() async {
     for (var player in gameData['players']) {
       if (player['cards'].isEmpty) {
         setState(() {
@@ -261,11 +280,25 @@ class _MyHomePageState extends State<MyHomePage> {
         });
       }
     }
+
     if (gameData['currentPlayer'] >= (gameData['players'].length - 1)) {
       print("max players");
+
       setState(() {
         gameData['currentPlayer'] = 0;
       });
+      if (await Vibration.hasVibrator() ?? false) {
+        Vibration.vibrate(duration: 250);
+        _controller.forward();
+        await Future.delayed(const Duration(milliseconds: 250));
+        _controller.reverse();
+      } else {
+        //flash bg red
+
+        _controller.forward();
+        await Future.delayed(const Duration(milliseconds: 250));
+        _controller.reverse();
+      }
     } else {
       print("next player");
       setState(() {
@@ -354,180 +387,201 @@ class _MyHomePageState extends State<MyHomePage> {
         )),
       );
     } else {
-      game = Scaffold(
-        appBar: AppBar(
-          title: Text(widget.title),
-        ),
-        body: Center(
-            child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              TextButton(
-                  onPressed: () {},
-                  child: const Text("New! Try Multiplayer [Beta]")),
-              if (gameData['currentPlayer'] > 0)
-                Text("Current Player: ${gameData['currentPlayer']}"),
-              if (gameData['currentPlayer'] == 0)
-                const Text(
-                  "Your Turn!",
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.grey),
-                ),
-              const Text(
-                "Your cards",
-                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+      game = AnimatedBuilder(
+        animation: _color,
+        builder: (BuildContext _, Widget? __) {
+          return Container(
+            decoration:
+                BoxDecoration(color: _color.value, shape: BoxShape.rectangle),
+            child: Scaffold(
+              backgroundColor: _color.value,
+              appBar: AppBar(
+                title: Text(widget.title),
               ),
-              const Text("Click on a card to play it"),
-              if (invalidAttemptError)
-                Text(
-                  "Invalid Play!",
-                  style:
-                      TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-                ),
-              const SizedBox(
-                width: 0,
-                height: 20,
-              ),
-              Wrap(
-                children: gameData['players'][0]['cards']
-                    .map<Widget>((card) => Padding(
-                          padding: const EdgeInsets.all(2.0),
-                          child: ElevatedButton(
-                            onPressed: (gameData['currentPlayer'] == 0)
-                                ? () {
-                                    print(gameData['players'][0]['cards']);
-                                    playCard(card, 0);
-                                  }
-                                : null,
-                            style: canPlayCard(card)
-                                ? ElevatedButton.styleFrom(
-                                    backgroundColor: getCardColor(card),
-                                    minimumSize: Size(50, 120),
-                                    shadowColor: getCardColor(card),
-                                    elevation: 20.0,
-                                  )
-                                : ElevatedButton.styleFrom(
-                                    backgroundColor:
-                                        getCardColor(card).withOpacity(0.3),
-                                    minimumSize: Size(50, 120)),
-                            child: !card['special']
-                                ? Text(
-                                    "${card['color']}\n${card['number'].toString()}",
-                                    textAlign: TextAlign.center,
-                                  )
-                                : !(card['chosenColor'] == '')
-                                    ? Text(
-                                        "${card['color']}\n${card['type']}",
-                                        textAlign: TextAlign.center,
-                                      )
-                                    : Column(children: [
-                                        Text(
-                                            "${card['color']} ${card['type']}"),
-                                        ElevatedButton(
-                                          onPressed: () {
-                                            setState(() {
-                                              card['chosenColor'] = 'red';
-                                            });
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.red,
-                                              minimumSize: Size(80, 20)),
-                                          child: const Text("Red"),
-                                        ),
-                                        ElevatedButton(
-                                          onPressed: () {
-                                            setState(() {
-                                              card['chosenColor'] = 'blue';
-                                            });
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.blue,
-                                              minimumSize: Size(80, 20)),
-                                          child: const Text("Blue"),
-                                        ),
-                                        ElevatedButton(
-                                          onPressed: () {
-                                            setState(() {
-                                              card['chosenColor'] = 'green';
-                                            });
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.green,
-                                              minimumSize: Size(80, 20)),
-                                          child: const Text("Green"),
-                                        ),
-                                        ElevatedButton(
-                                          onPressed: () {
-                                            setState(() {
-                                              card['chosenColor'] = 'yellow';
-                                            });
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                              backgroundColor: Color.fromARGB(
-                                                  255, 153, 138, 0),
-                                              minimumSize: Size(80, 20)),
-                                          child: const Text("Yellow"),
-                                        ),
-                                      ]),
-                          ),
-                        ))
-                    .toList(),
-              ),
-              TextButton(
-                  onPressed: () {
-                    drawCard(0);
-                  },
-                  child: const Text("Draw Card")),
-              const SizedBox(
-                width: 0,
-                height: 20,
-              ),
-              const Text(
-                "Current Card",
-                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-              ),
-              const Text("This is the card at the top of the stack"),
-              const SizedBox(
-                width: 0,
-                height: 20,
-              ),
-              ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: getCardColor(gameData['stack']['current']),
-                    minimumSize: Size(40, 100),
-                    alignment: Alignment.center),
-                child: !gameData['stack']['current']['special']
-                    ? Text(
-                        "${gameData['stack']['current']['color']}\n${gameData['stack']['current']['number'].toString()}",
-                        textAlign: TextAlign.center,
-                      )
-                    : Text(
-                        "${gameData['stack']['current']['color']}\n${gameData['stack']['current']['type']}",
-                        textAlign: TextAlign.center,
+              body: Center(
+                  child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    TextButton(
+                        onPressed: () {},
+                        child: const Text("New! Try Multiplayer [Beta]")),
+                    if (gameData['currentPlayer'] > 0)
+                      Text("Current Player: ${gameData['currentPlayer']}"),
+                    if (gameData['currentPlayer'] == 0)
+                      const Text(
+                        "Your Turn!",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, color: Colors.grey),
                       ),
-              ),
-              Wrap(
-                children: gameData['players']
-                    .map<Widget>((player) => Padding(
-                          padding: const EdgeInsets.all(15),
-                          child: player['bot']
-                              ? Text(
-                                  "Bot ${player['id']}\n${player['cards'].length} card(s) left",
-                                  textAlign: TextAlign.center)
-                              : Text(
-                                  "You\n${player['cards'].length} card(s) left",
-                                  textAlign: TextAlign.center,
+                    const Text(
+                      "Your cards",
+                      style:
+                          TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                    ),
+                    const Text("Click on a card to play it"),
+                    if (invalidAttemptError)
+                      Text(
+                        "Invalid Play!",
+                        style: TextStyle(
+                            color: Colors.red, fontWeight: FontWeight.bold),
+                      ),
+                    const SizedBox(
+                      width: 0,
+                      height: 20,
+                    ),
+                    Wrap(
+                      children: gameData['players'][0]['cards']
+                          .map<Widget>((card) => Padding(
+                                padding: const EdgeInsets.all(2.0),
+                                child: ElevatedButton(
+                                  onPressed: (gameData['currentPlayer'] == 0)
+                                      ? () {
+                                          print(
+                                              gameData['players'][0]['cards']);
+                                          playCard(card, 0);
+                                        }
+                                      : null,
+                                  style: canPlayCard(card)
+                                      ? ElevatedButton.styleFrom(
+                                          backgroundColor: getCardColor(card),
+                                          minimumSize: Size(50, 120),
+                                          shadowColor: getCardColor(card),
+                                          elevation: 20.0,
+                                        )
+                                      : ElevatedButton.styleFrom(
+                                          backgroundColor: getCardColor(card)
+                                              .withOpacity(0.3),
+                                          minimumSize: Size(50, 120)),
+                                  child: !card['special']
+                                      ? Text(
+                                          "${card['color']}\n${card['number'].toString()}",
+                                          textAlign: TextAlign.center,
+                                        )
+                                      : !(card['chosenColor'] == '')
+                                          ? Text(
+                                              "${card['color']}\n${card['type']}",
+                                              textAlign: TextAlign.center,
+                                            )
+                                          : Column(children: [
+                                              Text(
+                                                  "${card['color']} ${card['type']}"),
+                                              ElevatedButton(
+                                                onPressed: () {
+                                                  setState(() {
+                                                    card['chosenColor'] = 'red';
+                                                  });
+                                                },
+                                                style: ElevatedButton.styleFrom(
+                                                    backgroundColor: Colors.red,
+                                                    minimumSize: Size(80, 20)),
+                                                child: const Text("Red"),
+                                              ),
+                                              ElevatedButton(
+                                                onPressed: () {
+                                                  setState(() {
+                                                    card['chosenColor'] =
+                                                        'blue';
+                                                  });
+                                                },
+                                                style: ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        Colors.blue,
+                                                    minimumSize: Size(80, 20)),
+                                                child: const Text("Blue"),
+                                              ),
+                                              ElevatedButton(
+                                                onPressed: () {
+                                                  setState(() {
+                                                    card['chosenColor'] =
+                                                        'green';
+                                                  });
+                                                },
+                                                style: ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        Colors.green,
+                                                    minimumSize: Size(80, 20)),
+                                                child: const Text("Green"),
+                                              ),
+                                              ElevatedButton(
+                                                onPressed: () {
+                                                  setState(() {
+                                                    card['chosenColor'] =
+                                                        'yellow';
+                                                  });
+                                                },
+                                                style: ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        Color.fromARGB(
+                                                            255, 153, 138, 0),
+                                                    minimumSize: Size(80, 20)),
+                                                child: const Text("Yellow"),
+                                              ),
+                                            ]),
                                 ),
-                        ))
-                    .toList(),
-              )
-            ],
-          ),
-        )), // This trailing comma makes auto-formatting nicer for build methods.
+                              ))
+                          .toList(),
+                    ),
+                    TextButton(
+                        onPressed: () {
+                          drawCard(0);
+                        },
+                        child: const Text("Draw Card")),
+                    const SizedBox(
+                      width: 0,
+                      height: 20,
+                    ),
+                    const Text(
+                      "Current Card",
+                      style:
+                          TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                    ),
+                    const Text("This is the card at the top of the stack"),
+                    const SizedBox(
+                      width: 0,
+                      height: 20,
+                    ),
+                    ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              getCardColor(gameData['stack']['current']),
+                          minimumSize: Size(40, 100),
+                          alignment: Alignment.center),
+                      child: !gameData['stack']['current']['special']
+                          ? Text(
+                              "${gameData['stack']['current']['color']}\n${gameData['stack']['current']['number'].toString()}",
+                              textAlign: TextAlign.center,
+                            )
+                          : Text(
+                              "${gameData['stack']['current']['color']}\n${gameData['stack']['current']['type']}",
+                              textAlign: TextAlign.center,
+                            ),
+                    ),
+                    Wrap(
+                      children: gameData['players']
+                          .map<Widget>((player) => Padding(
+                                padding: const EdgeInsets.all(15),
+                                child: player['bot']
+                                    ? Text(
+                                        "Bot ${player['id']}\n${player['cards'].length} card(s) left",
+                                        textAlign: TextAlign.center)
+                                    : Text(
+                                        "You\n${player['cards'].length} card(s) left",
+                                        textAlign: TextAlign.center,
+                                      ),
+                              ))
+                          .toList(),
+                    )
+                  ],
+                ),
+              )), // This trailing comma makes auto-formatting nicer for build methods.
+            ),
+          );
+        },
       );
     }
     return Container(child: game);
   }
 }
+/* */

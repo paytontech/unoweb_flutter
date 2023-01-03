@@ -41,6 +41,8 @@ dependencies:
   cloud_firestore: ^4.2.0
   socket_io_client: ^2.0.0
   web_socket_channel: ^2.2.0
+  vibration: ^1.7.6
+  vibration_web: ^1.6.5
 
 dev_dependencies:
   flutter_test:
