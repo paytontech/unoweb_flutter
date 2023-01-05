@@ -1,4 +1,4 @@
-import 'dart:convert';
+import 'dart:io' show Platform;
 import 'dart:math';
 import 'dart:async';
 
@@ -15,12 +15,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'unoweb-flutter',
+      title: 'JustOne',
       theme: ThemeData(
         // is not restarted.
         primarySwatch: Colors.green,
       ),
-      home: const MyHomePage(title: 'unoweb-flutter'),
+      home: const MyHomePage(title: 'JustOne'),
     );
   }
 }
@@ -105,9 +105,9 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       duration: const Duration(milliseconds: 250),
       vsync: this,
     );
-    _color =
-        ColorTween(begin: Colors.white, end: Color.fromARGB(255, 85, 255, 161))
-            .animate(_controller);
+    _color = ColorTween(
+            begin: Colors.white, end: const Color.fromARGB(255, 85, 255, 161))
+        .animate(_controller);
   }
 
   @override
@@ -232,9 +232,15 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                   .add(cards[Random().nextInt(cards.length)]);
             }
           } else if (card['type'] == 'reverse') {
-            setState(() {
-              gameData['reversed'] = true;
-            });
+            if (gameData['reversed']) {
+              setState(() {
+                gameData['reversed'] = false;
+              });
+            } else {
+              setState(() {
+                gameData['reversed'] = true;
+              });
+            }
           }
         }
         setState(() {
@@ -277,8 +283,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         return (gameData['currentPlayer']) + 1;
       }
     } else {
-      if (gameData['currentPlayer'] <= (gameData['players'].length - 1)) {
-        return gameData['players'].length;
+      if (gameData['currentPlayer'] > 0) {
+        return gameData['currentPlayer'] - 1;
       } else {
         return (gameData['players'].length) - 1;
       }
@@ -302,22 +308,19 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         setState(() {
           gameData['currentPlayer'] = 0;
         });
-        if (await Vibration.hasVibrator() ?? false) {
-          Vibration.vibrate(duration: 250);
-          _color = ColorTween(
-                  begin: Colors.white,
-                  end: getCardColor(gameData['stack']['current']))
-              .animate(_controller);
-          _controller.forward();
-          await Future.delayed(const Duration(milliseconds: 250));
-          _controller.reverse();
-        } else {
-          //flash bg red
-
-          _controller.forward();
-          await Future.delayed(const Duration(milliseconds: 250));
-          _controller.reverse();
+        if (!(Platform.isMacOS || Platform.isWindows)) {
+          if (await Vibration.hasVibrator() ?? false) {
+            Vibration.vibrate(duration: 250);
+          }
         }
+        //flash bg red
+        _color = ColorTween(
+                begin: Colors.white,
+                end: getCardColor(gameData['stack']['current']))
+            .animate(_controller);
+        _controller.forward();
+        await Future.delayed(const Duration(milliseconds: 250));
+        _controller.reverse();
       } else {
         print("next player");
         setState(() {
@@ -325,32 +328,31 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         });
       }
     } else {
-      if (gameData['currentPlayer'] <= (gameData['players'].length - 1)) {
+      if (gameData['currentPlayer'] > 0) {
         print("max players");
 
         setState(() {
-          gameData['currentPlayer'] = gameData['players'].length;
+          gameData['currentPlayer'] = gameData['currentPlayer'] - 1;
         });
       } else {
-        if (await Vibration.hasVibrator() ?? false) {
-          Vibration.vibrate(duration: 250);
-          _color = ColorTween(
-                  begin: Colors.white,
-                  end: getCardColor(gameData['stack']['current']))
-              .animate(_controller);
-          _controller.forward();
-          await Future.delayed(const Duration(milliseconds: 250));
-          _controller.reverse();
-        } else {
-          //flash bg red
-
-          _controller.forward();
-          await Future.delayed(const Duration(milliseconds: 250));
-          _controller.reverse();
-        }
         setState(() {
-          gameData['currentPlayer'] -= 1;
+          gameData['currentPlayer'] = gameData['players'].length - 1;
         });
+      }
+      if (gameData['currentPlayer'] == 0) {
+        if (!(Platform.isMacOS || Platform.isWindows)) {
+          if (await Vibration.hasVibrator() ?? false) {
+            Vibration.vibrate(duration: 250);
+          }
+        }
+        //flash bg red
+        _color = ColorTween(
+                begin: Colors.white,
+                end: getCardColor(gameData['stack']['current']))
+            .animate(_controller);
+        _controller.forward();
+        await Future.delayed(const Duration(milliseconds: 250));
+        _controller.reverse();
       }
     }
   }
@@ -414,13 +416,13 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             if (gameData['winState']['winner']['bot'])
               Text(
                 "Bot ${gameData['winState']['winner']['id']} has won!",
-                style: TextStyle(
+                style: const TextStyle(
                     color: Colors.red,
                     fontWeight: FontWeight.bold,
                     fontSize: 50),
               )
             else
-              Text(
+              const Text(
                 "You Win!",
                 style: TextStyle(
                     color: Colors.green,
@@ -437,7 +439,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                     gameData['currentPlayer'] = 0;
                   });
                 },
-                child: Text("Restart"))
+                child: const Text("Restart"))
           ],
         )),
       );
@@ -458,10 +460,21 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    TextButton(
-                        onPressed: () {},
-                        child: const Text("New! Try Multiplayer [Beta]")),
-                    if (gameData['currentPlayer'] > 0)
+                    if (gameData['reversed'])
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(
+                            Icons.repeat,
+                            color: Colors.grey,
+                          ),
+                          Text(
+                            "Reversed",
+                            style: TextStyle(color: Colors.grey),
+                          )
+                        ],
+                      ),
+                    if (gameData['currentPlayer'] != 0)
                       Text("Current Player: ${gameData['currentPlayer']}"),
                     if (gameData['currentPlayer'] == 0)
                       const Text(
@@ -476,7 +489,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                     ),
                     const Text("Click on a card to play it"),
                     if (invalidAttemptError)
-                      Text(
+                      const Text(
                         "Invalid Play!",
                         style: TextStyle(
                             color: Colors.red, fontWeight: FontWeight.bold),
@@ -500,14 +513,14 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                                   style: canPlayCard(card)
                                       ? ElevatedButton.styleFrom(
                                           backgroundColor: getCardColor(card),
-                                          minimumSize: Size(50, 120),
+                                          minimumSize: const Size(50, 120),
                                           shadowColor: getCardColor(card),
                                           elevation: 20.0,
                                         )
                                       : ElevatedButton.styleFrom(
                                           backgroundColor: getCardColor(card)
                                               .withOpacity(0.3),
-                                          minimumSize: Size(50, 120)),
+                                          minimumSize: const Size(50, 120)),
                                   child: !card['special']
                                       ? Text(
                                           "${card['color']}\n${card['number'].toString()}",
@@ -529,7 +542,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                                                 },
                                                 style: ElevatedButton.styleFrom(
                                                     backgroundColor: Colors.red,
-                                                    minimumSize: Size(80, 20)),
+                                                    minimumSize:
+                                                        const Size(80, 20)),
                                                 child: const Text("Red"),
                                               ),
                                               ElevatedButton(
@@ -542,7 +556,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                                                 style: ElevatedButton.styleFrom(
                                                     backgroundColor:
                                                         Colors.blue,
-                                                    minimumSize: Size(80, 20)),
+                                                    minimumSize:
+                                                        const Size(80, 20)),
                                                 child: const Text("Blue"),
                                               ),
                                               ElevatedButton(
@@ -555,7 +570,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                                                 style: ElevatedButton.styleFrom(
                                                     backgroundColor:
                                                         Colors.green,
-                                                    minimumSize: Size(80, 20)),
+                                                    minimumSize:
+                                                        const Size(80, 20)),
                                                 child: const Text("Green"),
                                               ),
                                               ElevatedButton(
@@ -567,9 +583,10 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                                                 },
                                                 style: ElevatedButton.styleFrom(
                                                     backgroundColor:
-                                                        Color.fromARGB(
+                                                        const Color.fromARGB(
                                                             255, 153, 138, 0),
-                                                    minimumSize: Size(80, 20)),
+                                                    minimumSize:
+                                                        const Size(80, 20)),
                                                 child: const Text("Yellow"),
                                               ),
                                             ]),
@@ -602,7 +619,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                       style: ElevatedButton.styleFrom(
                           backgroundColor:
                               getCardColor(gameData['stack']['current']),
-                          minimumSize: Size(40, 100),
+                          minimumSize: const Size(40, 100),
                           alignment: Alignment.center),
                       child: !gameData['stack']['current']['special']
                           ? Text(

@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:467306095090:android:3ecb561f9744f504d2cb6b",
         "android_client_info": {
-          "package_name": "com.example.unoweb"
+          "package_name": "com.paytondeveloper.justone"
         }
       },
       "oauth_client": [
@@ -34,7 +34,7 @@
               "client_id": "467306095090-6dpe7uro5uq2jgbkno816h4hfc8noll1.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.paytondeveloper.unoweb-flutter"
+                "bundle_id": "com.paytondeveloper.justone"
               }
             }
           ]

@@ -1,4 +1,4 @@
-package com.example.unoweb
+package com.paytondeveloper.justone
 
 import io.flutter.embedding.android.FlutterActivity
 
