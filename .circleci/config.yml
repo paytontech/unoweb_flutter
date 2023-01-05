@@ -6,8 +6,9 @@ version: 2.1
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 orbs:
   flutter: circleci/flutter@1.1.0
+  android: circleci/android@2.1.2
 jobs:
-  build:
+  build-ios:
     macos:
       xcode: 14.2
     steps:
@@ -16,11 +17,17 @@ jobs:
     - flutter/install_ios_gem
     - run:
        command: flutter build ipa
-       working_directory: /
+  build-android:
+    macos:
+      xcode: 14.2
+    steps:
+      - run: flutter build apk
+
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
   say-hello-workflow:
     jobs:
-      - build
+      - build-ios
+      - build-android
