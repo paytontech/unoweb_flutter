@@ -65,25 +65,21 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     }
     //colored special (+4, +2, reverse)
     cards.add({'color': 'red', 'type': '+2', 'special': true});
-    cards.add({'color': 'red', 'type': '+4', 'special': true});
     cards.add({'color': 'red', 'type': 'reverse', 'special': true});
     for (var i = 0; i < 10; i++) {
       cards.add({'color': 'blue', 'number': i, 'special': false});
     }
     cards.add({'color': 'blue', 'type': '+2', 'special': true});
-    cards.add({'color': 'blue', 'type': '+4', 'special': true});
     cards.add({'color': 'blue', 'type': 'reverse', 'special': true});
     for (var i = 0; i < 10; i++) {
       cards.add({'color': 'green', 'number': i, 'special': false});
     }
     cards.add({'color': 'green', 'type': '+2', 'special': true});
-    cards.add({'color': 'green', 'type': '+4', 'special': true});
     cards.add({'color': 'green', 'type': 'reverse', 'special': true});
     for (var i = 0; i < 10; i++) {
       cards.add({'color': 'yellow', 'number': i, 'special': false});
     }
     cards.add({'color': 'yellow', 'type': '+2', 'special': true});
-    cards.add({'color': 'yellow', 'type': '+4', 'special': true});
     cards.add({'color': 'yellow', 'type': 'reverse', 'special': true});
     //wild cards
     cards.add({
@@ -171,8 +167,9 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         //cards available
 
         Map chosenCard = possibleCards[Random().nextInt(possibleCards.length)];
-        Map checkedCard = Map.from(chosenCard);
-
+        Map checkedCard = new Map.from(chosenCard);
+        bot['cards'].remove(chosenCard);
+        bot['cards'].add(checkedCard);
         if (chosenCard['color'] == 'wild') {
           int red = 0;
           int blue = 0;
@@ -198,7 +195,6 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             if (blue == highest) checkedCard['chosenColor'] = 'blue';
             if (yellow == highest) checkedCard['chosenColor'] = 'yellow';
             if (green == highest) checkedCard['chosenColor'] = 'green';
-            print("botplay chosencard: ${chosenCard}");
           }
         }
         await Future.delayed(const Duration(seconds: 3));
@@ -248,6 +244,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           gameData['stack']['current'] = card;
           gameData['players'][playerID]['cards'].remove(card);
         });
+        print(
+            "current player ($playerID) card mount: ${gameData['players'][playerID]['cards'].length}");
         updatePlayer();
         botPlay();
       } else {
@@ -308,11 +306,13 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         setState(() {
           gameData['currentPlayer'] = 0;
         });
-        if (!(Platform.isMacOS || Platform.isWindows)) {
-          if (await Vibration.hasVibrator() ?? false) {
-            Vibration.vibrate(duration: 250);
+        try {
+          if (!(Platform.isMacOS || Platform.isWindows)) {
+            if (await Vibration.hasVibrator() ?? false) {
+              Vibration.vibrate(duration: 250);
+            }
           }
-        }
+        } catch (err) {}
         //flash bg red
         _color = ColorTween(
                 begin: Colors.white,
@@ -340,11 +340,13 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         });
       }
       if (gameData['currentPlayer'] == 0) {
-        if (!(Platform.isMacOS || Platform.isWindows)) {
-          if (await Vibration.hasVibrator() ?? false) {
-            Vibration.vibrate(duration: 250);
+        try {
+          if (!(Platform.isMacOS || Platform.isWindows)) {
+            if (await Vibration.hasVibrator() ?? false) {
+              Vibration.vibrate(duration: 250);
+            }
           }
-        }
+        } catch (err) {}
         //flash bg red
         _color = ColorTween(
                 begin: Colors.white,
@@ -536,8 +538,17 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                                                   "${card['color']} ${card['type']}"),
                                               ElevatedButton(
                                                 onPressed: () {
+                                                  Map newCard =
+                                                      new Map.from(card);
                                                   setState(() {
-                                                    card['chosenColor'] = 'red';
+                                                    newCard['chosenColor'] =
+                                                        'red';
+                                                    gameData['players'][0]
+                                                            ['cards']
+                                                        .remove(card);
+                                                    gameData['players'][0]
+                                                            ['cards']
+                                                        .add(newCard);
                                                   });
                                                 },
                                                 style: ElevatedButton.styleFrom(
@@ -548,9 +559,17 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                                               ),
                                               ElevatedButton(
                                                 onPressed: () {
+                                                  Map newCard =
+                                                      new Map.from(card);
                                                   setState(() {
-                                                    card['chosenColor'] =
+                                                    newCard['chosenColor'] =
                                                         'blue';
+                                                    gameData['players'][0]
+                                                            ['cards']
+                                                        .remove(card);
+                                                    gameData['players'][0]
+                                                            ['cards']
+                                                        .add(newCard);
                                                   });
                                                 },
                                                 style: ElevatedButton.styleFrom(
@@ -562,9 +581,17 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                                               ),
                                               ElevatedButton(
                                                 onPressed: () {
+                                                  Map newCard =
+                                                      new Map.from(card);
                                                   setState(() {
-                                                    card['chosenColor'] =
+                                                    newCard['chosenColor'] =
                                                         'green';
+                                                    gameData['players'][0]
+                                                            ['cards']
+                                                        .remove(card);
+                                                    gameData['players'][0]
+                                                            ['cards']
+                                                        .add(newCard);
                                                   });
                                                 },
                                                 style: ElevatedButton.styleFrom(
@@ -576,9 +603,17 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                                               ),
                                               ElevatedButton(
                                                 onPressed: () {
+                                                  Map newCard =
+                                                      new Map.from(card);
                                                   setState(() {
-                                                    card['chosenColor'] =
+                                                    newCard['chosenColor'] =
                                                         'yellow';
+                                                    gameData['players'][0]
+                                                            ['cards']
+                                                        .remove(card);
+                                                    gameData['players'][0]
+                                                            ['cards']
+                                                        .add(newCard);
                                                   });
                                                 },
                                                 style: ElevatedButton.styleFrom(
