@@ -5,21 +5,21 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:vibration/vibration.dart';
 
-void main() {
+void main() async {
   runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'JustOne',
       theme: ThemeData(
-        // is not restarted.
         primarySwatch: Colors.green,
       ),
+      themeMode: ThemeMode.system,
       home: const MyHomePage(title: 'JustOne'),
     );
   }
@@ -27,15 +27,6 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
 
   final String title;
 
@@ -359,7 +350,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     }
   }
 
-  void dealCards(playerCount) {
+  void dealCards(playerCount) async {
     Map stackCard = cards[Random().nextInt(cards.length)];
     if (stackCard['special']) {
       cards[Random().nextInt(cards.length)];
@@ -680,10 +671,11 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                                       ),
                               ))
                           .toList(),
-                    )
+                    ),
+                    const Text("v1.0.2")
                   ],
                 ),
-              )), // This trailing comma makes auto-formatting nicer for build methods.
+              )),
             ),
           );
         },
@@ -692,4 +684,3 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     return Container(child: game);
   }
 }
-/* */
