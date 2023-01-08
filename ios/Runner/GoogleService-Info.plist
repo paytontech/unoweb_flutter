@@ -3,21 +3,21 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>467306095090-6dpe7uro5uq2jgbkno816h4hfc8noll1.apps.googleusercontent.com</string>
+	<string>734070076682-un43dbtqvanjvavvpj7681b53mb89652.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.467306095090-6dpe7uro5uq2jgbkno816h4hfc8noll1</string>
+	<string>com.googleusercontent.apps.734070076682-un43dbtqvanjvavvpj7681b53mb89652</string>
 	<key>API_KEY</key>
-	<string>AIzaSyDFdCNpgEvVi7keWc8UAzFWaO34eRMUe9c</string>
+	<string>AIzaSyAhTSggKY-JiVku3hBR6UgfHCBQpYxvp5g</string>
 	<key>GCM_SENDER_ID</key>
-	<string>467306095090</string>
+	<string>734070076682</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.paytondeveloper.unoweb-flutter</string>
+	<string>com.paytondeveloper.justone</string>
 	<key>PROJECT_ID</key>
-	<string>unoweb-mp-discovery</string>
+	<string>justone-mp</string>
 	<key>STORAGE_BUCKET</key>
-	<string>unoweb-mp-discovery.appspot.com</string>
+	<string>justone-mp.appspot.com</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -29,6 +29,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:467306095090:ios:89a60b37c10b3215d2cb6b</string>
+	<string>1:734070076682:ios:3860f57b221241d9b536f3</string>
 </dict>
 </plist>

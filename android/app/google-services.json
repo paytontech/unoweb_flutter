@@ -1,41 +1,34 @@
 {
   "project_info": {
-    "project_number": "467306095090",
-    "project_id": "unoweb-mp-discovery",
-    "storage_bucket": "unoweb-mp-discovery.appspot.com"
+    "project_number": "734070076682",
+    "project_id": "justone-mp",
+    "storage_bucket": "justone-mp.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:467306095090:android:3ecb561f9744f504d2cb6b",
+        "mobilesdk_app_id": "1:734070076682:android:6291df785b853528b536f3",
         "android_client_info": {
           "package_name": "com.paytondeveloper.justone"
         }
       },
       "oauth_client": [
         {
-          "client_id": "467306095090-mnjem10begqgihp9h0hdqfdn95021ln9.apps.googleusercontent.com",
+          "client_id": "734070076682-e80i1po0aotcforjqt2lod789m2p1lsf.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyC7avGC_BydKg5b-HbUyxCHibqZvRpfMR0"
+          "current_key": "AIzaSyBxq2oyPzSGx16wyGLOu-zo9blkVcrS_Hk"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "467306095090-mnjem10begqgihp9h0hdqfdn95021ln9.apps.googleusercontent.com",
+              "client_id": "734070076682-e80i1po0aotcforjqt2lod789m2p1lsf.apps.googleusercontent.com",
               "client_type": 3
-            },
-            {
-              "client_id": "467306095090-6dpe7uro5uq2jgbkno816h4hfc8noll1.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.paytondeveloper.justone"
-              }
             }
           ]
         }

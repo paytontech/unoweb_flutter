@@ -4,6 +4,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:vibration/vibration.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'mp_chooser.dart';
 
 void main() async {
   runApp(const MyApp());
@@ -42,6 +45,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     'winState': {'winnerChosen': false, 'winner': {}},
     'reversed': false
   };
+  bool multiplayer = false;
   List<Map> cards = [];
   bool invalidAttemptError = false;
   Color bg = Colors.white;
@@ -86,6 +90,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    init();
     genCards();
     dealCards(4);
     _controller = AnimationController(
@@ -95,6 +100,11 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     _color = ColorTween(
             begin: Colors.white, end: const Color.fromARGB(255, 85, 255, 161))
         .animate(_controller);
+  }
+
+  Future<void> init() async {
+    await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform);
   }
 
   @override
@@ -238,7 +248,9 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         print(
             "current player ($playerID) card mount: ${gameData['players'][playerID]['cards'].length}");
         updatePlayer();
-        botPlay();
+        if (!multiplayer) {
+          botPlay();
+        }
       } else {
         if (gameData['currentPlayer'] == playerID) {
           setState(() {
@@ -453,6 +465,15 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
+                    /*TextButton(
+                        onPressed: () async {
+                          final res = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => MPStart()));
+                        },
+                        child: const Text(
+                            "[Beta] Try the new online multiplayer mode!")),*/
                     if (gameData['reversed'])
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
