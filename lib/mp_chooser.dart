@@ -1,6 +1,8 @@
 // ignore_for_file: prefer_const_constructors
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'auth.dart';
 
 //stateful widget called MPStart
 class MPStart extends StatefulWidget {
@@ -10,6 +12,23 @@ class MPStart extends StatefulWidget {
 }
 
 class MPStartHome extends State<MPStart> {
+  Map mpdata = {"auth": false, "username": ""};
+  @override
+  void initState() {
+    super.initState();
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      print(user);
+      if (user == null) {
+        setState(() {
+          mpdata["auth"] = false;
+        });
+      } else {
+        mpdata["auth"] = true;
+        mpdata["username"] = user.displayName;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext ctx) {
     return Scaffold(
@@ -50,27 +69,49 @@ class MPStartHome extends State<MPStart> {
                     textAlign: TextAlign.center,
                     style: TextStyle(color: Colors.grey),
                   ),
-                  Text(
-                    "With that said, you now are faced with a very challenging and important option: To host, or not to host?",
-                    textAlign: TextAlign.center,
-                  ),
-                  Text(
-                    "Your choice here will affect your life greatly for the next 5-10 minutes, so choose wisely.",
-                    textAlign: TextAlign.center,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Padding(
-                          padding: EdgeInsets.all(10),
-                          child: ElevatedButton(
-                              onPressed: () {}, child: Text("Host"))),
-                      Padding(
-                          padding: EdgeInsets.all(20),
-                          child: ElevatedButton(
-                              onPressed: () {}, child: Text("Join")))
-                    ],
-                  )
+                  if (mpdata["auth"])
+                    Text(
+                      "With that said, you now are faced with a very challenging and important option: To host, or not to host?",
+                      textAlign: TextAlign.center,
+                    ),
+                  if (mpdata["auth"])
+                    Text(
+                      "Your choice here will affect your life greatly for the next 5-10 minutes, so choose wisely.",
+                      textAlign: TextAlign.center,
+                    ),
+                  if (mpdata["auth"])
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Padding(
+                            padding: EdgeInsets.all(10),
+                            child: ElevatedButton(
+                                onPressed: () {}, child: Text("Host"))),
+                        Padding(
+                            padding: EdgeInsets.all(20),
+                            child: ElevatedButton(
+                                onPressed: () {}, child: Text("Join")))
+                      ],
+                    ),
+                  if (!mpdata["auth"])
+                    Text(
+                      "Now, normally there would be a snarky sentence about \"To host or not to host,\" but, as to your choice, you have none currently. This is for one reason, and only one reason:",
+                      textAlign: TextAlign.center,
+                    ),
+                  if (!mpdata["auth"])
+                    Text(
+                      "You need to be signed in!\nAh, the classic choice: To create an account or to not create an account? I think i'm streching this joke a little too far now. Bottom line: sign in to play online",
+                      textAlign: TextAlign.center,
+                    ),
+                  if (!mpdata["auth"])
+                    ElevatedButton(
+                        onPressed: () async {
+                          final res = await Navigator.push(
+                              ctx,
+                              MaterialPageRoute(
+                                  builder: ((context) => AuthWelcome())));
+                        },
+                        child: Text("Go to Auth page"))
                 ],
               ),
             ))

@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:io' show Platform;
 import 'dart:math';
 import 'dart:async';
@@ -465,7 +467,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    /*TextButton(
+                    TextButton(
                         onPressed: () async {
                           final res = await Navigator.push(
                               context,
@@ -473,7 +475,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                                   builder: (context) => MPStart()));
                         },
                         child: const Text(
-                            "[Beta] Try the new online multiplayer mode!")),*/
+                            "[Beta] Try the new online multiplayer mode!")),
                     if (gameData['reversed'])
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
