@@ -23,14 +23,16 @@ class MPStartHome extends State<MPStart> {
           mpdata["auth"] = false;
         });
       } else {
-        mpdata["auth"] = true;
-        mpdata["username"] = user.displayName;
+        setState(() {
+          mpdata["auth"] = true;
+          mpdata["username"] = user.displayName;
+        });
       }
     });
   }
 
   @override
-  Widget build(BuildContext ctx) {
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Start a Multiplayer Session'),
@@ -107,11 +109,20 @@ class MPStartHome extends State<MPStart> {
                     ElevatedButton(
                         onPressed: () async {
                           final res = await Navigator.push(
-                              ctx,
+                              context,
                               MaterialPageRoute(
                                   builder: ((context) => AuthWelcome())));
+                          print(await res);
                         },
-                        child: Text("Go to Auth page"))
+                        child: Text("Go to Auth page")),
+                  if (mpdata['auth'])
+                    ElevatedButton(
+                        onPressed: () {
+                          FirebaseAuth.instance.signOut();
+                        },
+                        child: Text("Sign Out"),
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red))
                 ],
               ),
             ))

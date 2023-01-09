@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_constructors
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class AuthWelcome extends StatefulWidget {
@@ -10,7 +11,6 @@ class AuthWelcome extends StatefulWidget {
 }
 
 class AuthWelcomeState extends State<AuthWelcome> {
-  int option = 0;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,31 +33,29 @@ class AuthWelcomeState extends State<AuthWelcome> {
                 Padding(
                   padding: EdgeInsets.all(30),
                   child: ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          option = 1;
-                        });
+                      onPressed: () async {
+                        final res = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => SignUpForm()))
+                            .whenComplete(() => Navigator.pop(context));
                       },
                       child: Text("Create Account")),
                 ),
                 Padding(
                   padding: EdgeInsets.all(30),
                   child: ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          option = 2;
-                        });
+                      onPressed: () async {
+                        final res = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => LoginForm()))
+                            .whenComplete(() => Navigator.pop(context));
                       },
                       child: Text("Log In")),
                 ),
               ],
             ),
-            if (option == 1)
-              SizedBox(
-                height: 1000,
-                width: 500,
-                child: SignUpForm(),
-              )
           ],
         ),
       )),
@@ -72,13 +70,185 @@ class SignUpForm extends StatefulWidget {
 }
 
 class SignUpFormState extends State<SignUpForm> {
+  String email = "";
+  String password = "";
+  String confirmPass = "";
+  String username = "";
+  String errTxt = "";
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
           child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [Text("Create Account")],
+        children: [
+          Text("Great choice!"),
+          Text("Just provide the following info, NOW:"),
+          Padding(
+            padding: EdgeInsets.all(30),
+            child: TextField(
+              onChanged: (value) {
+                setState(() {
+                  username = value;
+                });
+              },
+              decoration: InputDecoration(
+                  hintText: 'Username (3-12 characters)',
+                  border: OutlineInputBorder()),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.all(30),
+            child: TextField(
+              onChanged: (value) {
+                setState(() {
+                  email = value;
+                });
+              },
+              decoration: InputDecoration(
+                  hintText: 'Email', border: OutlineInputBorder()),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.all(30),
+            child: TextField(
+              onChanged: (value) {
+                setState(() {
+                  password = value;
+                });
+              },
+              decoration: InputDecoration(
+                  hintText: 'Password', border: OutlineInputBorder()),
+              obscureText: true,
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.all(30),
+            child: TextField(
+              onChanged: (value) {
+                setState(() {
+                  confirmPass = value;
+                });
+              },
+              decoration: InputDecoration(
+                  hintText: 'Confirm Password', border: OutlineInputBorder()),
+              obscureText: true,
+            ),
+          ),
+          Text(
+            errTxt,
+            style: TextStyle(color: Colors.red),
+            textAlign: TextAlign.center,
+          ),
+          ElevatedButton(
+              onPressed: () async {
+                if (username.length > 12 || username.length < 3) {
+                  setState(() {
+                    errTxt =
+                        "Your username is not valid! It must be more than three characters and less than 12 characters.";
+                  });
+                  return;
+                }
+                if (!(password.length >= 8 && password == confirmPass)) {
+                  setState(() {
+                    errTxt =
+                        "Your password is not valid! Make sure it is at least 8 characters, and that \"Confirm Passowrd\" and \"Password\" is the same.";
+                  });
+                  return;
+                }
+                try {
+                  FirebaseAuth.instance
+                      .createUserWithEmailAndPassword(
+                          email: email, password: password)
+                      .whenComplete(() => {
+                            FirebaseAuth.instance.currentUser
+                                ?.updateDisplayName(username),
+                            Navigator.pop(context, true)
+                          });
+                } catch (err) {
+                  print(err);
+                  Navigator.pop(context, false);
+                }
+              },
+              child: Text("Create Account"))
+        ],
+      )),
+    );
+  }
+}
+
+class LoginForm extends StatefulWidget {
+  const LoginForm({super.key});
+
+  State<LoginForm> createState() => LoginFormState();
+}
+
+class LoginFormState extends State<LoginForm> {
+  String email = "";
+  String password = "";
+  String confirmPass = "";
+  String username = "";
+  String errTxt = "";
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+          child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text("Great choice!"),
+          Text("Just provide the following info, NOW:"),
+          Padding(
+            padding: EdgeInsets.all(30),
+            child: TextField(
+              onChanged: (value) {
+                setState(() {
+                  email = value;
+                });
+              },
+              decoration: InputDecoration(
+                  hintText: 'Email', border: OutlineInputBorder()),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.all(30),
+            child: TextField(
+              onChanged: (value) {
+                setState(() {
+                  password = value;
+                });
+              },
+              decoration: InputDecoration(
+                  hintText: 'Password', border: OutlineInputBorder()),
+              obscureText: true,
+            ),
+          ),
+          Text(
+            errTxt,
+            style: TextStyle(color: Colors.red),
+            textAlign: TextAlign.center,
+          ),
+          ElevatedButton(
+              onPressed: () async {
+                if (!(password.length >= 8)) {
+                  setState(() {
+                    errTxt =
+                        "Your password is not valid! Make sure it is at least 8 characters, and that \"Confirm Passowrd\" and \"Password\" is the same.";
+                  });
+                  return;
+                }
+                try {
+                  FirebaseAuth.instance
+                      .signInWithEmailAndPassword(
+                          email: email, password: password)
+                      .whenComplete(() => {Navigator.pop(context, true)});
+                } catch (err) {
+                  print(err);
+                  Navigator.pop(context, false);
+                }
+              },
+              child: Text("Create Account"))
+        ],
       )),
     );
   }
