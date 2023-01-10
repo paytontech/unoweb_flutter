@@ -1,7 +1,11 @@
 // ignore_for_file: prefer_const_constructors
 
+import 'dart:math';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'auth.dart';
 
 //stateful widget called MPStart
@@ -26,6 +30,7 @@ class MPStartHome extends State<MPStart> {
         setState(() {
           mpdata["auth"] = true;
           mpdata["username"] = user.displayName;
+          mpdata["uid"] = user.uid;
         });
       }
     });
@@ -88,11 +93,42 @@ class MPStartHome extends State<MPStart> {
                         Padding(
                             padding: EdgeInsets.all(10),
                             child: ElevatedButton(
-                                onPressed: () {}, child: Text("Host"))),
+                                onPressed: () {
+                                  int code = 000000;
+                                  code = Random().nextInt(999999) + 100000;
+                                  FirebaseFirestore.instance
+                                      .collection("active")
+                                      .doc(code.toString())
+                                      .set({}).whenComplete(() {
+                                    mpdata["code"] = code;
+                                    //mpdate state key:
+                                    //0 = not in mp
+                                    //1 = host
+                                    //2 = player
+                                    mpdata["state"] = 1;
+                                    mpdata["mp"] = true;
+                                    Navigator.pop(context, mpdata);
+                                  });
+                                },
+                                child: Text("Host"))),
                         Padding(
                             padding: EdgeInsets.all(20),
                             child: ElevatedButton(
-                                onPressed: () {}, child: Text("Join")))
+                                onPressed: () async {
+                                  final res = Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              HostModal())).then((value) {
+                                    mpdata['code'] = value['code'];
+                                    mpdata['state'] = 2;
+                                    mpdata['mp'] = true;
+                                  });
+                                  ;
+
+                                  Navigator.pop(context, mpdata);
+                                },
+                                child: Text("Join")))
                       ],
                     ),
                   if (!mpdata["auth"])
@@ -129,6 +165,68 @@ class MPStartHome extends State<MPStart> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class HostModal extends StatefulWidget {
+  const HostModal({super.key});
+
+  @override
+  State<HostModal> createState() => HostModalState();
+}
+
+class HostModalState extends State<HostModal> {
+  int code = 000000;
+  String errTxt = "";
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Text(
+          "Join a Session",
+          style: TextStyle(fontSize: 20),
+        ),
+        Text(
+            "So, you want to join a session. Great!\nAll you need is the game code. This is a six-digit number which the host has."),
+        Padding(
+          padding: EdgeInsets.all(30),
+          child: TextField(
+            onChanged: (value) {
+              if (value.length != 6) {
+                setState(() {
+                  errTxt = "Code must be six digits long!";
+                });
+              } else {
+                setState(() {
+                  errTxt = "";
+                });
+                code = int.parse(value);
+              }
+            },
+            onSubmitted: (value) {
+              Map data = {};
+              data["code"] = code;
+              //mpdate state key:
+              //0 = not in mp
+              //1 = host
+              //2 = player
+              data["state"] = 2;
+              data["mp"] = true;
+              Navigator.pop(context, data);
+            },
+            decoration: InputDecoration(
+                border: OutlineInputBorder(), hintText: "Six-Digit number"),
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          ),
+        ),
+        Text(
+          errTxt,
+          style: TextStyle(color: Colors.red),
+        )
+      ])),
     );
   }
 }

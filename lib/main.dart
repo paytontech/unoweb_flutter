@@ -4,6 +4,7 @@ import 'dart:io' show Platform;
 import 'dart:math';
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:vibration/vibration.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -89,6 +90,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         {'color': 'wild', 'type': '+4', 'special': true, 'chosenColor': ''});
   }
 
+  Map mpdata = {};
   @override
   void initState() {
     super.initState();
@@ -410,6 +412,41 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     }
   }
 
+  void resetGame(int playerCount) {
+    setState(() {
+      gameData['players'] = [];
+      gameData['winState']['winner'] = {};
+      dealCards(playerCount);
+      gameData['winState']['winnerChosen'] = false;
+      gameData['currentPlayer'] = 0;
+    });
+  }
+
+  void setupMultiplayer() {
+    int code = mpdata['code'];
+    int host = mpdata['uid'];
+    int state = mpdata['state'];
+    setState(() {
+      multiplayer = true;
+    });
+    if (mpdata['state'] == 1) {
+      //user is host
+      resetGame(4);
+
+      FirebaseFirestore.instance.doc(code.toString()).set({
+        "gameData": gameData,
+        "host": host,
+        "players": [host],
+        "dateLastUpdated": DateTime.now()
+      });
+    } else {
+      Map<String, dynamic>? data = {};
+      FirebaseFirestore.instance.doc(code.toString()).get().then((snap) {
+        data = snap.data();
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     Widget game;
@@ -438,13 +475,9 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
               ),
             ElevatedButton(
                 onPressed: () {
-                  setState(() {
-                    gameData['players'] = [];
-                    gameData['winState']['winner'] = {};
-                    dealCards(4);
-                    gameData['winState']['winnerChosen'] = false;
-                    gameData['currentPlayer'] = 0;
-                  });
+                  if (!multiplayer) {
+                    resetGame(4);
+                  } else {}
                 },
                 child: const Text("Restart"))
           ],
@@ -467,15 +500,20 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    TextButton(
-                        onPressed: () async {
-                          final res = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => MPStart()));
-                        },
-                        child: const Text(
-                            "[Beta] Try the new online multiplayer mode!")),
+                    if (!multiplayer)
+                      TextButton(
+                          onPressed: () async {
+                            final res = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => MPStart()));
+                            mpdata = await res;
+                            print(mpdata);
+                            setupMultiplayer();
+                          },
+                          child: const Text(
+                              "[Beta] Try the new online multiplayer mode!")),
+                    if (multiplayer) Text("Code: ${mpdata['code']}"),
                     if (gameData['reversed'])
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
