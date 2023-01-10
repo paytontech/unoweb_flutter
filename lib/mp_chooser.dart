@@ -115,18 +115,17 @@ class MPStartHome extends State<MPStart> {
                             padding: EdgeInsets.all(20),
                             child: ElevatedButton(
                                 onPressed: () async {
-                                  final res = Navigator.push(
+                                  Navigator.push(
                                       context,
                                       MaterialPageRoute(
                                           builder: (context) =>
                                               HostModal())).then((value) {
+                                    print("back");
                                     mpdata['code'] = value['code'];
                                     mpdata['state'] = 2;
                                     mpdata['mp'] = true;
+                                    Navigator.pop(context, mpdata);
                                   });
-                                  ;
-
-                                  Navigator.pop(context, mpdata);
                                 },
                                 child: Text("Join")))
                       ],

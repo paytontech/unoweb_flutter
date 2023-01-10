@@ -5,6 +5,7 @@ import 'dart:math';
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:vibration/vibration.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -40,13 +41,15 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
+class _MyHomePageState extends State<MyHomePage>
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   Map gameData = {
     'players': [],
     'currentPlayer': 0,
     'stack': {'current': {}, 'prev': []},
     'winState': {'winnerChosen': false, 'winner': {}},
-    'reversed': false
+    'reversed': false,
+    'playerCount': 0
   };
   bool multiplayer = false;
   List<Map> cards = [];
@@ -90,9 +93,10 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         {'color': 'wild', 'type': '+4', 'special': true, 'chosenColor': ''});
   }
 
-  Map mpdata = {};
+  Map mpdata = {'playerID': 0, "finishedLoading": true};
   @override
   void initState() {
+    WidgetsBinding.instance.addObserver(this);
     super.initState();
     init();
     genCards();
@@ -113,8 +117,36 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _controller.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.paused:
+        print("paused");
+        if (mpdata['state'] == 1) {
+          FirebaseFirestore.instance
+              .collection("active")
+              .doc(mpdata['code'].toString())
+              .delete();
+        } else if (mpdata['state'] == 2) {
+          FirebaseFirestore.instance
+              .collection("active")
+              .doc(mpdata['code'].toString())
+              .delete();
+        } else {
+          print("not in mp session");
+        }
+        return;
+      case AppLifecycleState.resumed:
+        print("paused");
+        return;
+      default:
+        return;
+    }
   }
 
   Color getCardColor(card) {
@@ -151,7 +183,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
   void botPlay() async {
     print("bot attempting play..");
-    if (gameData['currentPlayer'] > 0) {
+    if (gameData['currentPlayer'] > mpdata['playerID']) {
       Map bot = gameData['players'][gameData['currentPlayer']];
       List<Map> possibleCards = [];
       for (var card in bot['cards']) {
@@ -252,6 +284,12 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         print(
             "current player ($playerID) card mount: ${gameData['players'][playerID]['cards'].length}");
         updatePlayer();
+        if (multiplayer) {
+          FirebaseFirestore.instance
+              .collection("active")
+              .doc(mpdata['code'].toString())
+              .update({'gameData': gameData});
+        }
         if (!multiplayer) {
           botPlay();
         }
@@ -346,7 +384,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           gameData['currentPlayer'] = gameData['players'].length - 1;
         });
       }
-      if (gameData['currentPlayer'] == 0) {
+      if (gameData['currentPlayer'] == mpdata['playerID']) {
         try {
           if (!(Platform.isMacOS || Platform.isWindows)) {
             if (await Vibration.hasVibrator() ?? false) {
@@ -366,27 +404,52 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     }
   }
 
-  void dealCards(playerCount) async {
+  void mpGetStack() {
     Map stackCard = cards[Random().nextInt(cards.length)];
     if (stackCard['special']) {
-      cards[Random().nextInt(cards.length)];
-      dealCards(playerCount);
       return;
     } else {
       gameData['stack']['current'] = stackCard;
     }
+  }
 
-    for (var i = 0; i < playerCount; i++) {
-      if (i == 0) {
-        gameData['players'].add({'id': i, 'cards': [], 'bot': false});
+  void mpDealCard(String? username, String? uid) {
+    gameData['players'].add({
+      'id': gameData['players'].length,
+      'cards': [],
+      'bot': false,
+      'uid': uid,
+      'username': username
+    });
+    for (var z = 0; z < 7; z++) {
+      gameData['players'][gameData['playerCount'] - 1]['cards']
+          .add(cards[Random().nextInt(cards.length)]);
+    }
+  }
+
+  void dealCards(playerCount) async {
+    if (!multiplayer) {
+      Map stackCard = cards[Random().nextInt(cards.length)];
+      if (stackCard['special']) {
+        cards[Random().nextInt(cards.length)];
+        dealCards(playerCount);
+        return;
       } else {
-        gameData['players'].add({'id': i, 'cards': [], 'bot': true});
+        gameData['stack']['current'] = stackCard;
       }
-      for (var z = 0; z < 7; z++) {
-        gameData['players'][i]['cards']
-            .add(cards[Random().nextInt(cards.length)]);
+
+      for (var i = 0; i < playerCount; i++) {
+        if (i == 0) {
+          gameData['players'].add({'id': i, 'cards': [], 'bot': false});
+        } else {
+          gameData['players'].add({'id': i, 'cards': [], 'bot': true});
+        }
+        for (var z = 0; z < 7; z++) {
+          gameData['players'][i]['cards']
+              .add(cards[Random().nextInt(cards.length)]);
+        }
+        print(gameData['players'].length);
       }
-      print(gameData['players'].length);
     }
   }
 
@@ -397,7 +460,14 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             .add(cards[Random().nextInt(cards.length)]);
       });
       updatePlayer();
-      botPlay();
+      if (multiplayer) {
+        FirebaseFirestore.instance
+            .collection("active")
+            .doc(mpdata['code'].toString())
+            .update({'gameData': gameData});
+      } else {
+        botPlay();
+      }
     }
   }
 
@@ -412,39 +482,86 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     }
   }
 
-  void resetGame(int playerCount) {
+  void resetGame(int? playerCount) {
     setState(() {
       gameData['players'] = [];
       gameData['winState']['winner'] = {};
-      dealCards(playerCount);
+      if (!multiplayer) {
+        dealCards(playerCount);
+      }
       gameData['winState']['winnerChosen'] = false;
       gameData['currentPlayer'] = 0;
     });
   }
 
   void setupMultiplayer() {
+    setState(() {
+      mpdata['finishedLoading'] = false;
+    });
     int code = mpdata['code'];
-    int host = mpdata['uid'];
+    String host = mpdata['uid'];
     int state = mpdata['state'];
     setState(() {
       multiplayer = true;
     });
-    if (mpdata['state'] == 1) {
+    if (state == 1) {
       //user is host
-      resetGame(4);
+      resetGame(0);
 
-      FirebaseFirestore.instance.doc(code.toString()).set({
+      gameData['playerCount'] = 1;
+      mpdata['playerID'] = 0;
+      mpDealCard(mpdata['username'], mpdata['uid']);
+      FirebaseFirestore.instance.collection("active").doc(code.toString()).set({
         "gameData": gameData,
         "host": host,
-        "players": [host],
-        "dateLastUpdated": DateTime.now()
+        "players": [host]
+      }).then((value) {
+        setState(() {
+          mpdata['finishedLoading'] = true;
+        });
       });
     } else {
+      List currentPlayers = [];
       Map<String, dynamic>? data = {};
-      FirebaseFirestore.instance.doc(code.toString()).get().then((snap) {
-        data = snap.data();
+      FirebaseFirestore.instance
+          .collection("active")
+          .doc(code.toString())
+          .get()
+          .then((snap) {
+        if (snap.exists) {
+          data = snap.data();
+          List current = data?['players'];
+          current.add(mpdata['uid']);
+          print(current);
+          setState(() {
+            final updatedData = data?['gameData'];
+            updatedData['playerCount'] += 1;
+            mpdata['playerID'] = updatedData['playerCount'] - 1;
+            gameData = updatedData;
+            mpDealCard(mpdata['username'], mpdata['uid']);
+          });
+          FirebaseFirestore.instance
+              .collection("active")
+              .doc(code.toString())
+              .update({"players": current, "gameData": gameData}).then((value) {
+            setState(() {
+              mpdata['finishedLoading'] = true;
+            });
+          });
+        } else {
+          print("oops :( snapshot no exist :((");
+        }
       });
     }
+    FirebaseFirestore.instance
+        .collection("active")
+        .doc(code.toString())
+        .snapshots()
+        .listen((snapshot) {
+      setState(() {
+        gameData = snapshot.data()?['gameData'];
+      });
+    });
   }
 
   @override
@@ -483,7 +600,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           ],
         )),
       );
-    } else {
+    } else if (mpdata['finishedLoading']) {
       game = AnimatedBuilder(
         animation: _color,
         builder: (BuildContext _, Widget? __) {
@@ -500,6 +617,18 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
+                    if (multiplayer)
+                      ElevatedButton(
+                        onPressed: () {
+                          FirebaseFirestore.instance
+                              .collection("active")
+                              .doc(mpdata['code'].toString())
+                              .delete();
+                        },
+                        child: Text("Leave"),
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red),
+                      ),
                     if (!multiplayer)
                       TextButton(
                           onPressed: () async {
@@ -509,7 +638,11 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                                     builder: (context) => MPStart()));
                             mpdata = await res;
                             print(mpdata);
-                            setupMultiplayer();
+                            if (mpdata['mp']) {
+                              setupMultiplayer();
+                            } else {
+                              print("error - mp not setup");
+                            }
                           },
                           child: const Text(
                               "[Beta] Try the new online multiplayer mode!")),
@@ -528,9 +661,9 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                           )
                         ],
                       ),
-                    if (gameData['currentPlayer'] != 0)
+                    if (gameData['currentPlayer'] != mpdata['playerID'])
                       Text("Current Player: ${gameData['currentPlayer']}"),
-                    if (gameData['currentPlayer'] == 0)
+                    if (gameData['currentPlayer'] == mpdata['playerID'])
                       const Text(
                         "Your Turn!",
                         style: TextStyle(
@@ -553,15 +686,16 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                       height: 20,
                     ),
                     Wrap(
-                      children: gameData['players'][0]['cards']
+                      children: gameData['players'][mpdata['playerID']]['cards']
                           .map<Widget>((card) => Padding(
                                 padding: const EdgeInsets.all(2.0),
                                 child: ElevatedButton(
-                                  onPressed: (gameData['currentPlayer'] == 0)
+                                  onPressed: (gameData['currentPlayer'] ==
+                                          mpdata['playerID'])
                                       ? () {
-                                          print(
-                                              gameData['players'][0]['cards']);
-                                          playCard(card, 0);
+                                          print(gameData['players']
+                                              [mpdata['playerID']]['cards']);
+                                          playCard(card, mpdata['playerID']);
                                         }
                                       : null,
                                   style: canPlayCard(card)
@@ -595,10 +729,12 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                                                   setState(() {
                                                     newCard['chosenColor'] =
                                                         'red';
-                                                    gameData['players'][0]
+                                                    gameData['players'][mpdata[
+                                                                'playerID']]
                                                             ['cards']
                                                         .remove(card);
-                                                    gameData['players'][0]
+                                                    gameData['players'][mpdata[
+                                                                'playerID']]
                                                             ['cards']
                                                         .add(newCard);
                                                   });
@@ -616,10 +752,12 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                                                   setState(() {
                                                     newCard['chosenColor'] =
                                                         'blue';
-                                                    gameData['players'][0]
+                                                    gameData['players'][mpdata[
+                                                                'playerID']]
                                                             ['cards']
                                                         .remove(card);
-                                                    gameData['players'][0]
+                                                    gameData['players'][mpdata[
+                                                                'playerID']]
                                                             ['cards']
                                                         .add(newCard);
                                                   });
@@ -638,10 +776,12 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                                                   setState(() {
                                                     newCard['chosenColor'] =
                                                         'green';
-                                                    gameData['players'][0]
+                                                    gameData['players'][mpdata[
+                                                                'playerID']]
                                                             ['cards']
                                                         .remove(card);
-                                                    gameData['players'][0]
+                                                    gameData['players'][mpdata[
+                                                                'playerID']]
                                                             ['cards']
                                                         .add(newCard);
                                                   });
@@ -660,10 +800,12 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                                                   setState(() {
                                                     newCard['chosenColor'] =
                                                         'yellow';
-                                                    gameData['players'][0]
+                                                    gameData['players'][mpdata[
+                                                                'playerID']]
                                                             ['cards']
                                                         .remove(card);
-                                                    gameData['players'][0]
+                                                    gameData['players'][mpdata[
+                                                                'playerID']]
                                                             ['cards']
                                                         .add(newCard);
                                                   });
@@ -701,7 +843,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                     ),
                     ElevatedButton(
                       onPressed: () {
-                        drawCard(0);
+                        drawCard(mpdata['playerID']);
                       },
                       style: ElevatedButton.styleFrom(
                           backgroundColor:
@@ -722,14 +864,23 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                       children: gameData['players']
                           .map<Widget>((player) => Padding(
                                 padding: const EdgeInsets.all(15),
-                                child: player['bot']
-                                    ? Text(
-                                        "Bot ${player['id']}\n${player['cards'].length} card(s) left",
-                                        textAlign: TextAlign.center)
-                                    : Text(
-                                        "You\n${player['cards'].length} card(s) left",
-                                        textAlign: TextAlign.center,
-                                      ),
+                                child: (!multiplayer)
+                                    ? player['bot']
+                                        ? Text(
+                                            "Bot ${player['id']}\n${player['cards'].length} card(s) left",
+                                            textAlign: TextAlign.center)
+                                        : Text(
+                                            "You\n${player['cards'].length} card(s) left",
+                                            textAlign: TextAlign.center,
+                                          )
+                                    : !(player['id'] == mpdata['playerID'])
+                                        ? Text(
+                                            "${player['username']}\n${player['cards'].length} card(s) left",
+                                            textAlign: TextAlign.center)
+                                        : Text(
+                                            "You (${player['username']})\n${player['cards'].length} card(s) left",
+                                            textAlign: TextAlign.center,
+                                          ),
                               ))
                           .toList(),
                     ),
@@ -740,6 +891,24 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             ),
           );
         },
+      );
+    } else {
+      game = Scaffold(
+        body: Center(
+            child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Icon(
+              Icons.groups_outlined,
+              size: 50,
+            ),
+            Text(
+              "Loading Multiplayer...",
+              style: TextStyle(fontSize: 25),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        )),
       );
     }
     return Container(child: game);
