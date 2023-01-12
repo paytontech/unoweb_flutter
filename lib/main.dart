@@ -493,6 +493,12 @@ class _MyHomePageState extends State<MyHomePage>
     });
   }
 
+  void resetMP() {
+    setState(() {
+      mpdata = {'playerID': 0, 'finishedLoading': true};
+    });
+  }
+
   void setupMultiplayer() {
     setState(() {
       mpdata['finishedLoading'] = false;
@@ -558,6 +564,7 @@ class _MyHomePageState extends State<MyHomePage>
         .doc(code.toString())
         .snapshots()
         .listen((snapshot) {
+<<<<<<< Updated upstream
       if (snapshot.exists) {
         setState(() {
           gameData = snapshot.data()?['gameData'];
@@ -565,6 +572,13 @@ class _MyHomePageState extends State<MyHomePage>
       } else {
         resetGame(4);
       }
+=======
+      setState(() {
+        if (snapshot.exists) {
+          gameData = snapshot.data()?['gameData'];
+        }
+      });
+>>>>>>> Stashed changes
     });
   }
 
@@ -646,8 +660,14 @@ class _MyHomePageState extends State<MyHomePage>
                               .collection("active")
                               .doc(mpdata['code'].toString())
                               .delete();
+<<<<<<< Updated upstream
                           setState(() {
                             mpdata['finishedLoading'] = false;
+=======
+                          resetMP();
+                          setState(() {
+                            multiplayer = false;
+>>>>>>> Stashed changes
                           });
                           resetGame(4);
                         },
@@ -662,9 +682,10 @@ class _MyHomePageState extends State<MyHomePage>
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) => MPStart()));
-                            mpdata = await res;
+
                             print(mpdata);
-                            if (mpdata['mp']) {
+                            if (await res['mp'] != null) {
+                              mpdata = await res;
                               setupMultiplayer();
                             } else {
                               print("error - mp not setup");
@@ -910,7 +931,7 @@ class _MyHomePageState extends State<MyHomePage>
                               ))
                           .toList(),
                     ),
-                    const Text("v1.0.2")
+                    const Text("v1.1.1")
                   ],
                 ),
               )),

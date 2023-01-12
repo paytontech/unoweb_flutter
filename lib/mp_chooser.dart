@@ -21,7 +21,7 @@ class MPStartHome extends State<MPStart> {
   void initState() {
     super.initState();
     FirebaseAuth.instance.authStateChanges().listen((User? user) {
-      print(user);
+      print("user changed - not showing for security resons woogogoog");
       if (user == null) {
         setState(() {
           mpdata["auth"] = false;
@@ -107,6 +107,7 @@ class MPStartHome extends State<MPStart> {
                                     //2 = player
                                     mpdata["state"] = 1;
                                     mpdata["mp"] = true;
+                                    print(mpdata.toString());
                                     Navigator.pop(context, mpdata);
                                   });
                                 },
@@ -120,11 +121,13 @@ class MPStartHome extends State<MPStart> {
                                       MaterialPageRoute(
                                           builder: (context) =>
                                               HostModal())).then((value) {
-                                    print("back");
-                                    mpdata['code'] = value['code'];
-                                    mpdata['state'] = 2;
-                                    mpdata['mp'] = true;
-                                    Navigator.pop(context, mpdata);
+                                    if (value != null) {
+                                      print("back");
+                                      mpdata['code'] = value['code'];
+                                      mpdata['state'] = 2;
+                                      mpdata['mp'] = true;
+                                      Navigator.pop(context, mpdata);
+                                    }
                                   });
                                 },
                                 child: Text("Join")))
@@ -205,15 +208,32 @@ class HostModalState extends State<HostModal> {
               }
             },
             onSubmitted: (value) {
-              Map data = {};
-              data["code"] = code;
-              //mpdate state key:
-              //0 = not in mp
-              //1 = host
-              //2 = player
-              data["state"] = 2;
-              data["mp"] = true;
-              Navigator.pop(context, data);
+              try {
+                FirebaseFirestore.instance
+                    .collection("active")
+                    .doc(code.toString())
+                    .get()
+                    .then((value) {
+                  if (value.exists) {
+                    Map data = {};
+                    data["code"] = code;
+                    //mpdate state key:
+                    //0 = not in mp
+                    //1 = host
+                    //2 = player
+                    data["state"] = 2;
+                    data["mp"] = true;
+                    Navigator.pop(context, data);
+                  } else {
+                    print("doc does not exist");
+                    setState(() {
+                      errTxt = "Session does not exist!";
+                    });
+                  }
+                });
+              } catch (err) {
+                print(err);
+              }
             },
             decoration: InputDecoration(
                 border: OutlineInputBorder(), hintText: "Six-Digit number"),
