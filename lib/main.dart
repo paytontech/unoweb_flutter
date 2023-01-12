@@ -5,7 +5,6 @@ import 'dart:math';
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:vibration/vibration.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -553,14 +552,19 @@ class _MyHomePageState extends State<MyHomePage>
         }
       });
     }
+
     FirebaseFirestore.instance
         .collection("active")
         .doc(code.toString())
         .snapshots()
         .listen((snapshot) {
-      setState(() {
-        gameData = snapshot.data()?['gameData'];
-      });
+      if (snapshot.exists) {
+        setState(() {
+          gameData = snapshot.data()?['gameData'];
+        });
+      } else {
+        resetGame(4);
+      }
     });
   }
 
@@ -574,15 +578,33 @@ class _MyHomePageState extends State<MyHomePage>
             child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            if (gameData['winState']['winner']['bot'])
-              Text(
-                "Bot ${gameData['winState']['winner']['id']} has won!",
-                style: const TextStyle(
-                    color: Colors.red,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 50),
-              )
-            else
+            if (!multiplayer)
+              if (gameData['winState']['winner']['bot'])
+                Text(
+                  "Bot ${gameData['winState']['winner']['id']} has won!",
+                  style: const TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 50),
+                )
+              else
+                const Text(
+                  "You Win!",
+                  style: TextStyle(
+                      color: Colors.green,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 50),
+                ),
+            if (multiplayer)
+              if (gameData['winState']['winner']['id'] != mpdata['playerID'])
+                Text(
+                  "${gameData['winState']['winner']['username']} has won!",
+                  style: const TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 50),
+                ),
+            if (gameData['winState']['winner']['id'] == mpdata['playerID'])
               const Text(
                 "You Win!",
                 style: TextStyle(
@@ -624,6 +646,10 @@ class _MyHomePageState extends State<MyHomePage>
                               .collection("active")
                               .doc(mpdata['code'].toString())
                               .delete();
+                          setState(() {
+                            mpdata['finishedLoading'] = false;
+                          });
+                          resetGame(4);
                         },
                         child: Text("Leave"),
                         style: ElevatedButton.styleFrom(
