@@ -10,6 +10,7 @@ import 'package:vibration/vibration.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'mp_chooser.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 
 void main() async {
   runApp(const MyApp());
@@ -110,9 +111,13 @@ class _MyHomePageState extends State<MyHomePage>
         .animate(_controller);
   }
 
+  late FirebaseAnalytics analytics;
   Future<void> init() async {
     await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform);
+            options: DefaultFirebaseOptions.currentPlatform)
+        .whenComplete(() {
+      analytics = FirebaseAnalytics.instance;
+    });
   }
 
   @override
@@ -291,6 +296,11 @@ class _MyHomePageState extends State<MyHomePage>
             gameData['stack']['current'] = card;
             gameData['players'][playerID]['cards'].remove(card);
           });
+          if (playerID == mpdata['playerID']) {
+            await analytics.logEvent(
+                name: "play_card_attempt",
+                parameters: {'card': card.toString(), 'successful': "true"});
+          }
           print(
               "current player ($playerID) card mount: ${gameData['players'][playerID]['cards'].length}");
           updatePlayer();
@@ -307,6 +317,11 @@ class _MyHomePageState extends State<MyHomePage>
         }
       } else {
         if (gameData['currentPlayer'] == playerID) {
+          if (gameData['currentPlayer'] == mpdata['playerID']) {
+            await analytics.logEvent(
+                name: "play_card_attempt",
+                parameters: {'card': card.toString(), 'successful': "false"});
+          }
           setState(() {
             invalidAttemptError = true;
             errTxt = "Inavlid Play!";
@@ -743,8 +758,6 @@ class _MyHomePageState extends State<MyHomePage>
                                   onPressed: (gameData['currentPlayer'] ==
                                           mpdata['playerID'])
                                       ? () {
-                                          print(gameData['players']
-                                              [mpdata['playerID']]['cards']);
                                           playCard(card, mpdata['playerID']);
                                         }
                                       : null,
