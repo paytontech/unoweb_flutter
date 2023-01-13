@@ -505,7 +505,7 @@ class _MyHomePageState extends State<MyHomePage>
         card['number'] == gameData['stack']['current']['number'] ||
         (card['special'] && card['color'] == 'wild') ||
         (card['color'] == gameData['stack']['current']['chosenColor']) ||
-        !(card['color'] == 'wild' && card['chosenColor'] == '')) {
+        (card['color'] == 'wild' && !(card['chosenColor'] == ''))) {
       return true;
     } else {
       return false;
