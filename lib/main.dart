@@ -53,6 +53,7 @@ class _MyHomePageState extends State<MyHomePage>
   bool multiplayer = false;
   List<Map> cards = [];
   bool invalidAttemptError = false;
+  String errTxt = "";
   Color bg = Colors.white;
   late AnimationController _controller;
   late Animation<Color?> _color;
@@ -275,31 +276,45 @@ class _MyHomePageState extends State<MyHomePage>
             }
           }
         }
-        setState(() {
-          gameData['stack']['prev'].add(gameData['stack']['current']);
-          gameData['stack']['current'] = card;
-          gameData['players'][playerID]['cards'].remove(card);
-        });
-        print(
-            "current player ($playerID) card mount: ${gameData['players'][playerID]['cards'].length}");
-        updatePlayer();
+        if (card['color'] == 'wild' && card['chosenColor'] == '') {
+          setState(() {
+            invalidAttemptError = true;
+            errTxt = "Please choose a color first!";
+          });
+          Future.delayed(Duration(seconds: 3));
+          setState(() {
+            errTxt = "";
+          });
+        } else {
+          setState(() {
+            gameData['stack']['prev'].add(gameData['stack']['current']);
+            gameData['stack']['current'] = card;
+            gameData['players'][playerID]['cards'].remove(card);
+          });
+          print(
+              "current player ($playerID) card mount: ${gameData['players'][playerID]['cards'].length}");
+          updatePlayer();
+          if (!multiplayer) {
+            botPlay();
+          }
+        }
+
         if (multiplayer) {
           FirebaseFirestore.instance
               .collection("active")
               .doc(mpdata['code'].toString())
               .update({'gameData': gameData});
         }
-        if (!multiplayer) {
-          botPlay();
-        }
       } else {
         if (gameData['currentPlayer'] == playerID) {
           setState(() {
             invalidAttemptError = true;
+            errTxt = "Inavlid Play!";
           });
           await Future.delayed(const Duration(seconds: 3));
           setState(() {
             invalidAttemptError = false;
+            errTxt = "";
           });
         }
       }
@@ -308,10 +323,12 @@ class _MyHomePageState extends State<MyHomePage>
       if (gameData['currentPlayer'] == playerID) {
         setState(() {
           invalidAttemptError = true;
+          errTxt = "It's not your turn!";
         });
         await Future.delayed(const Duration(seconds: 3));
         setState(() {
           invalidAttemptError = false;
+          errTxt = "";
         });
       }
     }
@@ -383,23 +400,24 @@ class _MyHomePageState extends State<MyHomePage>
           gameData['currentPlayer'] = gameData['players'].length - 1;
         });
       }
-      if (gameData['currentPlayer'] == mpdata['playerID']) {
-        try {
-          if (!(Platform.isMacOS || Platform.isWindows)) {
-            if (await Vibration.hasVibrator() ?? false) {
-              Vibration.vibrate(duration: 250);
-            }
+    }
+    if (gameData['currentPlayer'] == mpdata['playerID']) {
+      _color = ColorTween(
+              begin: Colors.white,
+              end: getCardColor(gameData['stack']['current']))
+          .animate(_controller);
+      _controller.forward();
+      await Future.delayed(const Duration(milliseconds: 250));
+      _controller.reverse();
+      try {
+        if (!(Platform.isMacOS || Platform.isWindows)) {
+          if (await Vibration.hasVibrator() ?? false) {
+            Vibration.vibrate(duration: 250);
           }
-        } catch (err) {}
-        //flash bg red
-        _color = ColorTween(
-                begin: Colors.white,
-                end: getCardColor(gameData['stack']['current']))
-            .animate(_controller);
-        _controller.forward();
-        await Future.delayed(const Duration(milliseconds: 250));
-        _controller.reverse();
-      }
+        }
+      } catch (err) {}
+      //flash bg red
+
     }
   }
 
@@ -708,12 +726,11 @@ class _MyHomePageState extends State<MyHomePage>
                           TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
                     ),
                     const Text("Click on a card to play it"),
-                    if (invalidAttemptError)
-                      const Text(
-                        "Invalid Play!",
-                        style: TextStyle(
-                            color: Colors.red, fontWeight: FontWeight.bold),
-                      ),
+                    Text(
+                      errTxt,
+                      style: const TextStyle(
+                          color: Colors.red, fontWeight: FontWeight.bold),
+                    ),
                     const SizedBox(
                       width: 0,
                       height: 20,
