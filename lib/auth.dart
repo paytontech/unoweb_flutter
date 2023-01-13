@@ -78,7 +78,8 @@ class SignUpFormState extends State<SignUpForm> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
+        body: SingleChildScrollView(
+      child: Center(
           child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -162,8 +163,10 @@ class SignUpFormState extends State<SignUpForm> {
                           email: email, password: password)
                       .whenComplete(() => {
                             FirebaseAuth.instance.currentUser
-                                ?.updateDisplayName(username),
-                            Navigator.pop(context, true)
+                                ?.updateDisplayName(username)
+                                .whenComplete(() {
+                              Navigator.pop(context, true);
+                            }),
                           });
                 } catch (err) {
                   print(err);
@@ -173,7 +176,7 @@ class SignUpFormState extends State<SignUpForm> {
               child: Text("Create Account"))
         ],
       )),
-    );
+    ));
   }
 }
 
@@ -247,7 +250,7 @@ class LoginFormState extends State<LoginForm> {
                   Navigator.pop(context, false);
                 }
               },
-              child: Text("Create Account"))
+              child: Text("Sign In"))
         ],
       )),
     );
