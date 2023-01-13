@@ -27,7 +27,7 @@ echo "Deployed to web; Deploying iOS"
 cd /Users/paytondev/Documents/GitHub/unoweb_flutter/build/ios/ipa
 fastlane pilot upload --skip-submission --api_key_path keys.json --ipa 'justone.ipa'
 
-
+if [["$1" != '-r']] then
 echo "iOS deploy done\nNow for the GitHub release:\n"
 cd /Users/paytondev/Documents/GitHub/unoweb_flutter/
 set -e
@@ -43,3 +43,4 @@ BUILD_NUMBER=$(git rev-list HEAD --count)
 BUILD_NAME=$(strip "$BUILD_NAME" "+")
 echo "Creating release under tag \"$BUILD_NAME\""
 gh release create $BUILD_NAME '/Users/paytondev/Documents/GitHub/unoweb_flutter/build/ios/ipa/justone.ipa' '/Users/paytondev/Documents/GitHub/unoweb_flutter/build/macos/Build/Products/macOS.zip' '/Users/paytondev/Documents/GitHub/unoweb_flutter/build/app/outputs/flutter-apk/justone.apk'  --latest
+fi

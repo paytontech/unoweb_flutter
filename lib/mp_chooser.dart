@@ -242,6 +242,36 @@ class HostModalState extends State<HostModal> {
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           ),
         ),
+        ElevatedButton(
+            onPressed: () {
+              try {
+                FirebaseFirestore.instance
+                    .collection("active")
+                    .doc(code.toString())
+                    .get()
+                    .then((value) {
+                  if (value.exists) {
+                    Map data = {};
+                    data["code"] = code;
+                    //mpdate state key:
+                    //0 = not in mp
+                    //1 = host
+                    //2 = player
+                    data["state"] = 2;
+                    data["mp"] = true;
+                    Navigator.pop(context, data);
+                  } else {
+                    print("doc does not exist");
+                    setState(() {
+                      errTxt = "Session does not exist!";
+                    });
+                  }
+                });
+              } catch (err) {
+                print(err);
+              }
+            },
+            child: Text("Join")),
         Text(
           errTxt,
           style: TextStyle(color: Colors.red),

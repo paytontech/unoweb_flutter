@@ -281,32 +281,29 @@ class _MyHomePageState extends State<MyHomePage>
             }
           }
         }
-        if (card['color'] == 'wild' && card['chosenColor'] == '') {
-          setState(() {
-            invalidAttemptError = true;
-            errTxt = "Please choose a color first!";
-          });
-          Future.delayed(Duration(seconds: 3));
-          setState(() {
-            errTxt = "";
-          });
-        } else {
-          setState(() {
-            gameData['stack']['prev'].add(gameData['stack']['current']);
-            gameData['stack']['current'] = card;
-            gameData['players'][playerID]['cards'].remove(card);
-          });
-          if (playerID == mpdata['playerID']) {
-            await analytics.logEvent(
-                name: "play_card_attempt",
-                parameters: {'card': card.toString(), 'successful': "true"});
-          }
-          print(
-              "current player ($playerID) card mount: ${gameData['players'][playerID]['cards'].length}");
-          updatePlayer();
-          if (!multiplayer) {
-            botPlay();
-          }
+        setState(() {
+          invalidAttemptError = true;
+          errTxt = "Please choose a color first!";
+        });
+        Future.delayed(Duration(seconds: 3));
+        setState(() {
+          errTxt = "";
+        });
+        setState(() {
+          gameData['stack']['prev'].add(gameData['stack']['current']);
+          gameData['stack']['current'] = card;
+          gameData['players'][playerID]['cards'].remove(card);
+        });
+        if (playerID == mpdata['playerID']) {
+          await analytics.logEvent(
+              name: "play_card_attempt",
+              parameters: {'card': card.toString(), 'successful': "true"});
+        }
+        print(
+            "current player ($playerID) card mount: ${gameData['players'][playerID]['cards'].length}");
+        updatePlayer();
+        if (!multiplayer) {
+          botPlay();
         }
 
         if (multiplayer) {
@@ -317,11 +314,6 @@ class _MyHomePageState extends State<MyHomePage>
         }
       } else {
         if (gameData['currentPlayer'] == playerID) {
-          if (gameData['currentPlayer'] == mpdata['playerID']) {
-            await analytics.logEvent(
-                name: "play_card_attempt",
-                parameters: {'card': card.toString(), 'successful': "false"});
-          }
           setState(() {
             invalidAttemptError = true;
             errTxt = "Inavlid Play!";
@@ -335,6 +327,11 @@ class _MyHomePageState extends State<MyHomePage>
       }
     } else {
       //invalid
+      if (gameData['currentPlayer'] == mpdata['playerID']) {
+        await analytics.logEvent(
+            name: "play_card_attempt",
+            parameters: {'card': card.toString(), 'successful': "false"});
+      }
       if (gameData['currentPlayer'] == playerID) {
         setState(() {
           invalidAttemptError = true;
@@ -507,7 +504,8 @@ class _MyHomePageState extends State<MyHomePage>
     if (card['color'] == gameData['stack']['current']['color'] ||
         card['number'] == gameData['stack']['current']['number'] ||
         (card['special'] && card['color'] == 'wild') ||
-        (card['color'] == gameData['stack']['current']['chosenColor'])) {
+        (card['color'] == gameData['stack']['current']['chosenColor']) ||
+        !(card['color'] == 'wild' && card['chosenColor'] == '')) {
       return true;
     } else {
       return false;

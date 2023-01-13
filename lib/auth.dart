@@ -236,7 +236,7 @@ class LoginFormState extends State<LoginForm> {
                 if (!(password.length >= 8)) {
                   setState(() {
                     errTxt =
-                        "Your password is not valid! Make sure it is at least 8 characters, and that \"Confirm Passowrd\" and \"Password\" is the same.";
+                        "Your password is not valid! Make sure it is at least 8 characters, and that \"Confirm Passwwrd\" and \"Password\" is the same.";
                   });
                   return;
                 }
