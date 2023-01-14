@@ -23,10 +23,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'JustOne',
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-      ),
-      themeMode: ThemeMode.system,
+      theme: ThemeData(primarySwatch: Colors.teal, fontFamily: 'Satoshi'),
       home: const MyHomePage(title: 'JustOne'),
     );
   }
@@ -94,10 +91,15 @@ class _MyHomePageState extends State<MyHomePage>
         {'color': 'wild', 'type': '+4', 'special': true, 'chosenColor': ''});
   }
 
+  var window = WidgetsBinding.instance.window;
   Map mpdata = {'playerID': 0, "finishedLoading": true};
+  bool isDarkMode = false;
   @override
   void initState() {
     WidgetsBinding.instance.addObserver(this);
+    window.onPlatformBrightnessChanged = () {
+      isDarkMode = window.platformBrightness == Brightness.light ? false : true;
+    };
     super.initState();
     init();
     genCards();
@@ -386,14 +388,6 @@ class _MyHomePageState extends State<MyHomePage>
             }
           }
         } catch (err) {}
-        //flash bg red
-        _color = ColorTween(
-                begin: Colors.white,
-                end: getCardColor(gameData['stack']['current']))
-            .animate(_controller);
-        _controller.forward();
-        await Future.delayed(const Duration(milliseconds: 250));
-        _controller.reverse();
       } else {
         print("next player");
         setState(() {
@@ -922,6 +916,7 @@ class _MyHomePageState extends State<MyHomePage>
                             ),
                     ),
                     Wrap(
+                      alignment: WrapAlignment.center,
                       children: gameData['players']
                           .map<Widget>((player) => Padding(
                                 padding: const EdgeInsets.all(15),
@@ -945,7 +940,7 @@ class _MyHomePageState extends State<MyHomePage>
                               ))
                           .toList(),
                     ),
-                    const Text("v1.1.1")
+                    const Text("v1.1.2 rev1")
                   ],
                 ),
               )),

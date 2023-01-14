@@ -191,8 +191,13 @@ class HostModalState extends State<HostModal> {
           "Join a Session",
           style: TextStyle(fontSize: 20),
         ),
-        Text(
-            "So, you want to join a session. Great!\nAll you need is the game code. This is a six-digit number which the host has."),
+        Padding(
+          padding: EdgeInsets.all(30),
+          child: Text(
+            "So, you want to join a session. Great!\nAll you need is the game code. This is a six-digit number which the host has.",
+            textAlign: TextAlign.center,
+          ),
+        ),
         Padding(
           padding: EdgeInsets.all(30),
           child: TextField(
