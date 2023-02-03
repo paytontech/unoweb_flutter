@@ -27,15 +27,7 @@ RUN if ! cat /etc/group | grep -e "^pub-cache:" > /dev/null 2>&1; then groupadd 
     #
     # Fix incorrect privs if present on directories - https://github.com/dart-lang/dart-docker/issues/62, https://github.com/dart-lang/sdk/issues/47093
     && chmod 755 "$DART_SDK" "$DART_SDK/bin"
-RUN wget https://storage.googleapis.com/flutter_infra/releases/stable/linux/flutter_linux_v1.5.4-hotfix.2-stable.tar.xz
-RUN tar xf flutter_linux_v1.5.4-hotfix.2-stable.tar.xz 
-RUN rm flutter_linux_v1.5.4-hotfix.2-stable.tar.xz
-ENV PATH="/flutter/bin:${PATH}"
 
-RUN flutter config --no-analytics
-
-# Set a useful default shell
-ENV SHELL /bin/bash
 
 # [Optional] Uncomment this section to install additional OS packages.
 # RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \

@@ -65,21 +65,25 @@ class _MyHomePageState extends State<MyHomePage>
     //colored special (+4, +2, reverse)
     cards.add({'color': 'red', 'type': '+2', 'special': true});
     cards.add({'color': 'red', 'type': 'reverse', 'special': true});
+    // cards.add({'color': 'red', 'type': 'skip', 'special': true});
     for (var i = 0; i < 10; i++) {
       cards.add({'color': 'blue', 'number': i, 'special': false});
     }
     cards.add({'color': 'blue', 'type': '+2', 'special': true});
     cards.add({'color': 'blue', 'type': 'reverse', 'special': true});
+    // cards.add({'color': 'blue', 'type': 'skip', 'special': true});
     for (var i = 0; i < 10; i++) {
       cards.add({'color': 'green', 'number': i, 'special': false});
     }
     cards.add({'color': 'green', 'type': '+2', 'special': true});
     cards.add({'color': 'green', 'type': 'reverse', 'special': true});
+    // cards.add({'color': 'green', 'type': 'skip', 'special': true});
     for (var i = 0; i < 10; i++) {
       cards.add({'color': 'yellow', 'number': i, 'special': false});
     }
     cards.add({'color': 'yellow', 'type': '+2', 'special': true});
     cards.add({'color': 'yellow', 'type': 'reverse', 'special': true});
+    // cards.add({'color': 'yellow', 'type': 'skip', 'special': true});
     //wild cards
     cards.add({
       'color': 'wild',
@@ -423,7 +427,6 @@ class _MyHomePageState extends State<MyHomePage>
         }
       } catch (err) {}
       //flash bg red
-
     }
   }
 
@@ -720,7 +723,13 @@ class _MyHomePageState extends State<MyHomePage>
                         ],
                       ),
                     if (gameData['currentPlayer'] != mpdata['playerID'])
-                      Text("Current Player: ${gameData['currentPlayer']}"),
+                      if (!multiplayer &&
+                          gameData['currentPlayer'] != mpdata['playerID'])
+                        Text("Current Player: ${gameData['currentPlayer']}"),
+                    if (multiplayer &&
+                        gameData['currentPlayer'] != mpdata['playerID'])
+                      Text(
+                          "Current Player: ${gameData['players'][gameData['currentPlayer']]['username']}"),
                     if (gameData['currentPlayer'] == mpdata['playerID'])
                       const Text(
                         "Your Turn!",

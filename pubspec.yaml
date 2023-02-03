@@ -52,8 +52,8 @@ flutter:
   fonts:
     - family: Satoshi
       fonts:
-        - asset: lib/assets/fonts/Satoshi-Bold.otf
-        - asset: lib/assets/fonts/Satoshi-Medium.otf
+        - asset: assets/fonts/Satoshi-Bold.otf
+        - asset: assets/fonts/Satoshi-Medium.otf
 
 
   # The following line ensures that the Material Icons font is
@@ -94,15 +94,15 @@ flutter:
 flutter_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "lib/assets/icon/native/icon.jpg"
+  image_path: "assets/icon/native/icon.jpg"
   min_sdk_android: 21 # android min sdk min:16, default 21
   web:
     generate: true
-    image_path: "lib/assets/icon/web/icon.png"
+    image_path: "assets/icon/web/icon.png"
   windows:
     generate: true
-    image_path: "lib/assets/icon/native/desktop/icon.png"
+    image_path: "assets/icon/native/desktop/icon.png"
     icon_size: 48 # min:48, max:256, default: 48
   macos:
     generate: true
-    image_path: "lib/assets/icon/native/desktop/icon.png"
+    image_path: "assets/icon/native/desktop/icon.png"
