@@ -62,28 +62,28 @@ class _MyHomePageState extends State<MyHomePage>
     for (var i = 0; i < 10; i++) {
       cards.add({'color': 'red', 'number': i, 'special': false});
     }
-    //colored special (+4, +2, reverse)
+    //colored special (+4, +2, reverse, skip)
     cards.add({'color': 'red', 'type': '+2', 'special': true});
     cards.add({'color': 'red', 'type': 'reverse', 'special': true});
-    // cards.add({'color': 'red', 'type': 'skip', 'special': true});
+    cards.add({'color': 'red', 'type': 'skip', 'special': true});
     for (var i = 0; i < 10; i++) {
       cards.add({'color': 'blue', 'number': i, 'special': false});
     }
     cards.add({'color': 'blue', 'type': '+2', 'special': true});
     cards.add({'color': 'blue', 'type': 'reverse', 'special': true});
-    // cards.add({'color': 'blue', 'type': 'skip', 'special': true});
+    cards.add({'color': 'blue', 'type': 'skip', 'special': true});
     for (var i = 0; i < 10; i++) {
       cards.add({'color': 'green', 'number': i, 'special': false});
     }
     cards.add({'color': 'green', 'type': '+2', 'special': true});
     cards.add({'color': 'green', 'type': 'reverse', 'special': true});
-    // cards.add({'color': 'green', 'type': 'skip', 'special': true});
+    cards.add({'color': 'green', 'type': 'skip', 'special': true});
     for (var i = 0; i < 10; i++) {
       cards.add({'color': 'yellow', 'number': i, 'special': false});
     }
     cards.add({'color': 'yellow', 'type': '+2', 'special': true});
     cards.add({'color': 'yellow', 'type': 'reverse', 'special': true});
-    // cards.add({'color': 'yellow', 'type': 'skip', 'special': true});
+    cards.add({'color': 'yellow', 'type': 'skip', 'special': true});
     //wild cards
     cards.add({
       'color': 'wild',
@@ -307,7 +307,11 @@ class _MyHomePageState extends State<MyHomePage>
         }
         print(
             "current player ($playerID) card mount: ${gameData['players'][playerID]['cards'].length}");
-        updatePlayer();
+        if (card['type'] == 'skip') {
+          updatePlayer(1);
+        } else {
+          updatePlayer();
+        }
         if (!multiplayer) {
           botPlay();
         }
@@ -368,7 +372,7 @@ class _MyHomePageState extends State<MyHomePage>
     }
   }
 
-  void updatePlayer() async {
+  void updatePlayer([int offset = 0]) async {
     for (var player in gameData['players']) {
       if (player['cards'].isEmpty) {
         setState(() {
@@ -377,37 +381,39 @@ class _MyHomePageState extends State<MyHomePage>
         });
       }
     }
-
-    if (!gameData['reversed']) {
-      if (gameData['currentPlayer'] >= (gameData['players'].length - 1)) {
-        print("max players");
-
+    if (gameData['reversed']) {
+      print("reversed..");
+      if (gameData['currentPlayer'] == 0 && offset != 0) {
+        //if player is 0, game is reversed, and offset is not zero
+        print(
+            "offset not zero, player 0. going to player ${(gameData['players'].length - 1) - offset}");
         setState(() {
-          gameData['currentPlayer'] = 0;
+          gameData['currentPlayer'] = (gameData['players'].length - 1) - offset;
         });
-        try {
-          if (!(Platform.isMacOS || Platform.isWindows)) {
-            if (await Vibration.hasVibrator() ?? false) {
-              Vibration.vibrate(duration: 250);
-            }
-          }
-        } catch (err) {}
-      } else {
-        print("next player");
+      } else if (offset == 0) {
+        print(
+            "game reversed. offset not set. going to player ${getNextPlayer()}");
         setState(() {
-          gameData['currentPlayer'] += 1;
+          gameData['currentPlayer'] = getNextPlayer();
         });
       }
     } else {
-      if (gameData['currentPlayer'] > 0) {
-        print("max players");
-
+      if (getNextPlayer() == (gameData['players'].length - 1) && offset != 0) {
+        //if current player is the last player & offset is 0
+        print(
+            "game not reversed. player ${gameData['players'].length - 1}(last player). going to ${0 + offset}");
         setState(() {
-          gameData['currentPlayer'] = gameData['currentPlayer'] - 1;
+          gameData['currentPlayer'] = 0 + offset;
         });
-      } else {
+      } else if (offset != 0) {
+        print(
+            "game not reversed. player ${gameData['players'].length - 1}. offset 0");
         setState(() {
-          gameData['currentPlayer'] = gameData['players'].length - 1;
+          gameData['currentPlayer'] = getNextPlayer() + offset;
+        });
+      } else if (offset == 0) {
+        setState(() {
+          gameData['currentPlayer'] = getNextPlayer();
         });
       }
     }
