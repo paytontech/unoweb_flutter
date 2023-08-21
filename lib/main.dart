@@ -23,7 +23,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'JustOne',
-      theme: ThemeData(primarySwatch: Colors.teal, fontFamily: 'Satoshi'),
+      theme: ThemeData(
+          colorSchemeSeed: Colors.yellow,
+          fontFamily: 'Satoshi',
+          useMaterial3: true),
       home: const MyHomePage(title: 'JustOne'),
     );
   }
@@ -153,7 +156,6 @@ class _MyHomePageState extends State<MyHomePage>
         }
         return;
       case AppLifecycleState.resumed:
-        print("paused");
         return;
       default:
         return;
@@ -560,7 +562,7 @@ class _MyHomePageState extends State<MyHomePage>
         });
       });
     } else {
-      List currentPlayers = [];
+      // List currentPlayers = [];
       Map<String, dynamic>? data = {};
       FirebaseFirestore.instance
           .collection("active")
@@ -770,19 +772,20 @@ class _MyHomePageState extends State<MyHomePage>
                                       : null,
                                   style: canPlayCard(card)
                                       ? ElevatedButton.styleFrom(
-                                          backgroundColor: getCardColor(card),
                                           minimumSize: const Size(50, 120),
                                           shadowColor: getCardColor(card),
                                           elevation: 20.0,
                                         )
                                       : ElevatedButton.styleFrom(
-                                          backgroundColor: getCardColor(card)
-                                              .withOpacity(0.3),
                                           minimumSize: const Size(50, 120)),
                                   child: !card['special']
                                       ? Text(
                                           "${card['color']}\n${card['number'].toString()}",
                                           textAlign: TextAlign.center,
+                                          style: canPlayCard(card)
+                                              ? TextStyle(
+                                                  color: getCardColor(card))
+                                              : null,
                                         )
                                       : !(card['chosenColor'] == '')
                                           ? Text(
@@ -810,10 +813,11 @@ class _MyHomePageState extends State<MyHomePage>
                                                   });
                                                 },
                                                 style: ElevatedButton.styleFrom(
-                                                    backgroundColor: Colors.red,
                                                     minimumSize:
                                                         const Size(80, 20)),
-                                                child: const Text("Red"),
+                                                child: const Text("Red",
+                                                    style: TextStyle(
+                                                        color: Colors.red)),
                                               ),
                                               ElevatedButton(
                                                 onPressed: () {
@@ -833,11 +837,11 @@ class _MyHomePageState extends State<MyHomePage>
                                                   });
                                                 },
                                                 style: ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        Colors.blue,
                                                     minimumSize:
                                                         const Size(80, 20)),
-                                                child: const Text("Blue"),
+                                                child: const Text("Blue",
+                                                    style: TextStyle(
+                                                        color: Colors.blue)),
                                               ),
                                               ElevatedButton(
                                                 onPressed: () {
@@ -857,11 +861,11 @@ class _MyHomePageState extends State<MyHomePage>
                                                   });
                                                 },
                                                 style: ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        Colors.green,
                                                     minimumSize:
                                                         const Size(80, 20)),
-                                                child: const Text("Green"),
+                                                child: const Text("Green",
+                                                    style: TextStyle(
+                                                        color: Colors.green)),
                                               ),
                                               ElevatedButton(
                                                 onPressed: () {
@@ -881,12 +885,14 @@ class _MyHomePageState extends State<MyHomePage>
                                                   });
                                                 },
                                                 style: ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        const Color.fromARGB(
-                                                            255, 153, 138, 0),
                                                     minimumSize:
                                                         const Size(80, 20)),
-                                                child: const Text("Yellow"),
+                                                child: const Text(
+                                                  "Yellow",
+                                                  style: TextStyle(
+                                                      color: Color.fromARGB(
+                                                          255, 195, 176, 3)),
+                                                ),
                                               ),
                                             ]),
                                 ),
