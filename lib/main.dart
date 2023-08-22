@@ -6,6 +6,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:unoweb/UselessGameUtils.dart';
 import 'package:vibration/vibration.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -51,7 +52,7 @@ class _MyHomePageState extends State<MyHomePage>
     'reversed': false,
     'playerCount': 0
   };
-  static const wildcolors = ["Red", "Blue", "Green", "Yellow"];
+
   bool multiplayer = false;
   List<Map> cards = [];
   bool invalidAttemptError = false;
@@ -160,29 +161,6 @@ class _MyHomePageState extends State<MyHomePage>
         return;
       default:
         return;
-    }
-  }
-
-  Color getCardColor(Map? card, String? color) {
-    var newCard = {};
-    if (card == null) {
-      newCard = {'color': color!.toLowerCase()};
-    } else {
-      newCard = card;
-    }
-    switch (newCard['color'] == 'wild'
-        ? newCard['chosenColor']
-        : newCard['color']) {
-      case 'red':
-        return (Colors.red);
-      case 'blue':
-        return (Colors.blue);
-      case 'green':
-        return (Colors.green);
-      case 'yellow':
-        return (const Color.fromARGB(255, 195, 176, 3));
-      default:
-        return (Colors.black);
     }
   }
 
@@ -414,7 +392,8 @@ class _MyHomePageState extends State<MyHomePage>
     if (gameData['currentPlayer'] == mpdata['playerID']) {
       _color = ColorTween(
               begin: Colors.white,
-              end: getCardColor(gameData['stack']['current'], null))
+              end: UselessGameUtils.getCardColor(
+                  gameData['stack']['current'], null))
           .animate(_controller);
       _controller.forward();
       await Future.delayed(const Duration(milliseconds: 250));
@@ -602,6 +581,17 @@ class _MyHomePageState extends State<MyHomePage>
     });
   }
 
+  void presentMultiplayerView() async {
+    final res = await Navigator.push(
+        context, MaterialPageRoute(builder: (context) => MPStart()));
+
+    print(mpdata);
+    if (await res != null) {
+      mpdata = await res;
+      setupMultiplayer();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     Widget game;
@@ -667,6 +657,8 @@ class _MyHomePageState extends State<MyHomePage>
               backgroundColor: _color.value,
               appBar: AppBar(
                 title: Text(widget.title),
+                leading: IconButton(
+                    onPressed: presentMultiplayerView, icon: Icon(Icons.group)),
               ),
               body: Center(
                   child: SingleChildScrollView(
@@ -689,24 +681,6 @@ class _MyHomePageState extends State<MyHomePage>
                         style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.red),
                       ),
-                    if (!multiplayer)
-                      TextButton(
-                          onPressed: () async {
-                            final res = await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => MPStart()));
-
-                            print(mpdata);
-                            if (await res['mp'] != null) {
-                              mpdata = await res;
-                              setupMultiplayer();
-                            } else {
-                              print("error - mp not setup");
-                            }
-                          },
-                          child: const Text(
-                              "[Beta] Try the new online multiplayer mode!")),
                     if (multiplayer) Text("Code: ${mpdata['code']}"),
                     if (gameData['reversed'])
                       Row(
@@ -753,81 +727,30 @@ class _MyHomePageState extends State<MyHomePage>
                     ),
                     Wrap(
                       children: gameData['players'][mpdata['playerID']]['cards']
-                          .map<Widget>((card) => Padding(
-                                padding: const EdgeInsets.all(2.0),
-                                child: ElevatedButton(
-                                  onPressed: (gameData['currentPlayer'] ==
-                                              mpdata['playerID'] &&
-                                          canPlayCard(card))
-                                      ? () {
-                                          playCard(card, mpdata['playerID']);
-                                        }
-                                      : null,
-                                  style: ElevatedButton.styleFrom(
-                                    minimumSize: const Size(100, 120),
-                                    shadowColor: canPlayCard(card)
-                                        ? getCardColor(card, null)
-                                        : null,
-                                    elevation: canPlayCard(card) ? 22.0 : null,
-                                  ),
-                                  child: !card['special']
-                                      ? Text(
-                                          "${card['number'].toString()}",
-                                          textAlign: TextAlign.center,
-                                          style: canPlayCard(card)
-                                              ? TextStyle(
-                                                  color:
-                                                      getCardColor(card, null),
-                                                  fontSize: 30)
-                                              : null,
-                                        )
-                                      : !(card['chosenColor'] == '')
-                                          ? Text("${card['type']}",
-                                              textAlign: TextAlign.center,
-                                              style: TextStyle(
-                                                  color: canPlayCard(card)
-                                                      ? getCardColor(card, null)
-                                                      : null,
-                                                  fontSize: 30))
-                                          : Column(
-                                              children: wildcolors
-                                                  .map<Widget>((color) =>
-                                                      ElevatedButton(
-                                                        onPressed: () {
-                                                          Map newCard =
-                                                              new Map.from(
-                                                                  card);
-                                                          setState(() {
-                                                            newCard['chosenColor'] =
-                                                                color;
-                                                            gameData['players'][
-                                                                        mpdata[
-                                                                            'playerID']]
-                                                                    ['cards']
-                                                                .remove(card);
-                                                            gameData['players'][
-                                                                        mpdata[
-                                                                            'playerID']]
-                                                                    ['cards']
-                                                                .add(newCard);
-                                                          });
-                                                        },
-                                                        style: ElevatedButton
-                                                            .styleFrom(
-                                                                minimumSize:
-                                                                    const Size(
-                                                                        80,
-                                                                        20)),
-                                                        child: const Text(color,
-                                                            style: TextStyle(
-                                                                color:
-                                                                    getCardColor(
-                                                                        null,
-                                                                        color))),
-                                                      ))
-                                                  .toList()),
-                                ),
-                              ))
+                          .map<Widget>((card) => PlayerCardState(
+                              card: card,
+                              playerID: mpdata['playerID'],
+                              canPlay: canPlayCard(card),
+                              playCard: (gameData['currentPlayer'] ==
+                                          mpdata['playerID'] &&
+                                      canPlayCard(card))
+                                  ? () {
+                                      playCard(card, mpdata['playerID']);
+                                    }
+                                  : null,
+                              wildColorChosen: (ccolor) {
+                                print(ccolor);
+                                Map newCard = new Map.from(card);
+                                setState(() {
+                                  newCard['chosenColor'] = ccolor.toLowerCase();
+                                  gameData['players'][mpdata['playerID']]
+                                          ['cards']
+                                      .remove(card);
+                                  gameData['players'][mpdata['playerID']]
+                                          ['cards']
+                                      .add(newCard);
+                                });
+                              }))
                           .toList(),
                     ),
                     const SizedBox(
@@ -849,26 +772,19 @@ class _MyHomePageState extends State<MyHomePage>
                       height: 20,
                     ),
                     ElevatedButton(
-                      onPressed: () {
-                        drawCard(mpdata['playerID']);
-                      },
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              getCardColor(gameData['stack']['current'], null),
-                          minimumSize: const Size(40, 100),
-                          alignment: Alignment.center),
-                      child: !gameData['stack']['current']['special']
-                          ? Text(
-                              "${gameData['stack']['current']['number'].toString()}",
-                              textAlign: TextAlign.center,
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 30),
-                            )
-                          : Text(
-                              "${gameData['stack']['current']['type']}",
-                              textAlign: TextAlign.center,
-                            ),
-                    ),
+                        onPressed: () {
+                          drawCard(mpdata['playerID']);
+                        },
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: UselessGameUtils.getCardColor(
+                                gameData['stack']['current'], null),
+                            minimumSize: const Size(40, 100),
+                            alignment: Alignment.center),
+                        child: Text(
+                          "${gameData['stack']['current']['special'] ? gameData['stack']['current']['type'] : gameData['stack']['current']['number'].toString()}",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.white, fontSize: 30),
+                        )),
                     Wrap(
                       alignment: WrapAlignment.center,
                       children: gameData['players']
@@ -922,5 +838,76 @@ class _MyHomePageState extends State<MyHomePage>
       );
     }
     return Container(child: game);
+  }
+}
+
+class PlayerCardState extends StatefulWidget {
+  const PlayerCardState(
+      {super.key,
+      required this.card,
+      required this.playerID,
+      required this.canPlay,
+      required this.playCard,
+      required this.wildColorChosen});
+
+  final Map card;
+  final int playerID;
+  final bool canPlay;
+  final Function()? playCard;
+  final Function(String)? wildColorChosen;
+
+  @override
+  State<PlayerCardState> createState() => _PlayerCardState();
+}
+
+class _PlayerCardState extends State<PlayerCardState> {
+  var wildcolors = ["Red", "Blue", "Green", "Yellow"];
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(2.0),
+      child: ElevatedButton(
+        onPressed: widget.playCard,
+        style: ElevatedButton.styleFrom(
+          minimumSize: const Size(100, 120),
+          shadowColor: widget.canPlay
+              ? UselessGameUtils.getCardColor(widget.card, null)
+              : null,
+          elevation: widget.canPlay ? 22.0 : null,
+        ),
+        child: !widget.card['special']
+            ? Text(
+                "${widget.card['number'].toString()}",
+                textAlign: TextAlign.center,
+                style: widget.canPlay
+                    ? TextStyle(
+                        color: UselessGameUtils.getCardColor(widget.card, null),
+                        fontSize: 30)
+                    : null,
+              )
+            : !(widget.card['chosenColor'] == '')
+                ? Text("${widget.card['type']}",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        color: widget.canPlay
+                            ? UselessGameUtils.getCardColor(widget.card, null)
+                            : null,
+                        fontSize: 30))
+                : Column(
+                    children: wildcolors
+                        .map<Widget>((ccolor) => ElevatedButton(
+                              onPressed: () {
+                                widget.wildColorChosen!(ccolor.toLowerCase());
+                              },
+                              style: ElevatedButton.styleFrom(
+                                  minimumSize: const Size(80, 20)),
+                              child: Text(ccolor,
+                                  style: TextStyle(
+                                      color: UselessGameUtils.getCardColor(
+                                          null, ccolor))),
+                            ))
+                        .toList()),
+      ),
+    );
   }
 }
