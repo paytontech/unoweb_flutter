@@ -506,11 +506,10 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   bool canPlayCard(card) {
-    if (card['color'] == gameData['stack']['current']['color'] ||
+    if ((card['color'] == 'wild' && (card['chosenColor'] != '') || card['color'] == gameData['stack']['current']['color'] ||
         card['number'] == gameData['stack']['current']['number'] ||
         (card['special'] && card['color'] == 'wild') ||
-        (card['color'] == gameData['stack']['current']['chosenColor']) ||
-        (card['color'] == 'wild' && !(card['chosenColor'] == ''))) {
+        (card['color'] == gameData['stack']['current']['chosenColor']))) {
       return true;
     } else {
       return false;
@@ -765,36 +764,32 @@ class _MyHomePageState extends State<MyHomePage>
                                 padding: const EdgeInsets.all(2.0),
                                 child: ElevatedButton(
                                   onPressed: (gameData['currentPlayer'] ==
-                                          mpdata['playerID'])
+                                          mpdata['playerID'] && canPlayCard(card))
                                       ? () {
                                           playCard(card, mpdata['playerID']);
                                         }
                                       : null,
-                                  style: canPlayCard(card)
-                                      ? ElevatedButton.styleFrom(
-                                          minimumSize: const Size(50, 120),
-                                          shadowColor: getCardColor(card),
-                                          elevation: 20.0,
-                                        )
-                                      : ElevatedButton.styleFrom(
-                                          minimumSize: const Size(50, 120)),
+                                  style: ElevatedButton.styleFrom(
+                                          minimumSize: const Size(100, 120),
+                                          shadowColor: canPlayCard(card) ?  getCardColor(card) : null,
+                                          elevation: canPlayCard(card) ? 22.0 : null,
+                                        ),
                                   child: !card['special']
                                       ? Text(
-                                          "${card['color']}\n${card['number'].toString()}",
+                                          "${card['number'].toString()}",
                                           textAlign: TextAlign.center,
                                           style: canPlayCard(card)
                                               ? TextStyle(
-                                                  color: getCardColor(card))
+                                                  color: getCardColor(card), fontSize: 30)
                                               : null,
                                         )
                                       : !(card['chosenColor'] == '')
                                           ? Text(
-                                              "${card['color']}\n${card['type']}",
+                                              "${card['type']}",
                                               textAlign: TextAlign.center,
+                                          style: TextStyle(color: canPlayCard(card) ? getCardColor(card) : null, fontSize: 30)
                                             )
                                           : Column(children: [
-                                              Text(
-                                                  "${card['color']} ${card['type']}"),
                                               ElevatedButton(
                                                 onPressed: () {
                                                   Map newCard =
@@ -928,11 +923,12 @@ class _MyHomePageState extends State<MyHomePage>
                           alignment: Alignment.center),
                       child: !gameData['stack']['current']['special']
                           ? Text(
-                              "${gameData['stack']['current']['color']}\n${gameData['stack']['current']['number'].toString()}",
+                              "${gameData['stack']['current']['number'].toString()}",
                               textAlign: TextAlign.center,
+                              style: TextStyle(color: Colors.white, fontSize: 30),
                             )
                           : Text(
-                              "${gameData['stack']['current']['color']}\n${gameData['stack']['current']['type']}",
+                              "${gameData['stack']['current']['type']}",
                               textAlign: TextAlign.center,
                             ),
                     ),
@@ -961,7 +957,7 @@ class _MyHomePageState extends State<MyHomePage>
                               ))
                           .toList(),
                     ),
-                    const Text("v1.1.2 rev1")
+                    const Text("v1.1.2 rev2")
                   ],
                 ),
               )),
