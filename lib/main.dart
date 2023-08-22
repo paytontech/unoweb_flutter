@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, prefer_conditional_assignment
 
 import 'dart:io' show Platform;
 import 'dart:math';
@@ -51,6 +51,7 @@ class _MyHomePageState extends State<MyHomePage>
     'reversed': false,
     'playerCount': 0
   };
+  static const wildcolors = ["Red", "Blue", "Green", "Yellow"];
   bool multiplayer = false;
   List<Map> cards = [];
   bool invalidAttemptError = false;
@@ -162,35 +163,26 @@ class _MyHomePageState extends State<MyHomePage>
     }
   }
 
-  Color getCardColor(card) {
-    if (!(card['color'] == 'wild')) {
-      switch (card['color']) {
-        case 'red':
-          return (Colors.red);
-        case 'blue':
-          return (Colors.blue);
-        case 'green':
-          return (Colors.green);
-        case 'yellow':
-          return (const Color.fromARGB(255, 195, 176, 3));
-        default:
-          return (Colors.black);
-      }
-    } else if (card['color'] == 'wild') {
-      switch (card['chosenColor']) {
-        case 'red':
-          return (Colors.red);
-        case 'blue':
-          return (Colors.blue);
-        case 'green':
-          return (Colors.green);
-        case 'yellow':
-          return (const Color.fromARGB(255, 195, 176, 3));
-        default:
-          return (Colors.black);
-      }
+  Color getCardColor(Map? card, String? color) {
+    var newCard = {};
+    if (card == null) {
+      newCard = {'color': color!.toLowerCase()};
     } else {
-      return Colors.black;
+      newCard = card;
+    }
+    switch (newCard['color'] == 'wild'
+        ? newCard['chosenColor']
+        : newCard['color']) {
+      case 'red':
+        return (Colors.red);
+      case 'blue':
+        return (Colors.blue);
+      case 'green':
+        return (Colors.green);
+      case 'yellow':
+        return (const Color.fromARGB(255, 195, 176, 3));
+      default:
+        return (Colors.black);
     }
   }
 
@@ -422,7 +414,7 @@ class _MyHomePageState extends State<MyHomePage>
     if (gameData['currentPlayer'] == mpdata['playerID']) {
       _color = ColorTween(
               begin: Colors.white,
-              end: getCardColor(gameData['stack']['current']))
+              end: getCardColor(gameData['stack']['current'], null))
           .animate(_controller);
       _controller.forward();
       await Future.delayed(const Duration(milliseconds: 250));
@@ -506,7 +498,8 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   bool canPlayCard(card) {
-    if ((card['color'] == 'wild' && (card['chosenColor'] != '') || card['color'] == gameData['stack']['current']['color'] ||
+    if (((card['color'] == 'wild' && (card['chosenColor'] != '')) ||
+        (card['color'] == gameData['stack']['current']['color']) ||
         card['number'] == gameData['stack']['current']['number'] ||
         (card['special'] && card['color'] == 'wild') ||
         (card['color'] == gameData['stack']['current']['chosenColor']))) {
@@ -764,132 +757,75 @@ class _MyHomePageState extends State<MyHomePage>
                                 padding: const EdgeInsets.all(2.0),
                                 child: ElevatedButton(
                                   onPressed: (gameData['currentPlayer'] ==
-                                          mpdata['playerID'] && canPlayCard(card))
+                                              mpdata['playerID'] &&
+                                          canPlayCard(card))
                                       ? () {
                                           playCard(card, mpdata['playerID']);
                                         }
                                       : null,
                                   style: ElevatedButton.styleFrom(
-                                          minimumSize: const Size(100, 120),
-                                          shadowColor: canPlayCard(card) ?  getCardColor(card) : null,
-                                          elevation: canPlayCard(card) ? 22.0 : null,
-                                        ),
+                                    minimumSize: const Size(100, 120),
+                                    shadowColor: canPlayCard(card)
+                                        ? getCardColor(card, null)
+                                        : null,
+                                    elevation: canPlayCard(card) ? 22.0 : null,
+                                  ),
                                   child: !card['special']
                                       ? Text(
                                           "${card['number'].toString()}",
                                           textAlign: TextAlign.center,
                                           style: canPlayCard(card)
                                               ? TextStyle(
-                                                  color: getCardColor(card), fontSize: 30)
+                                                  color:
+                                                      getCardColor(card, null),
+                                                  fontSize: 30)
                                               : null,
                                         )
                                       : !(card['chosenColor'] == '')
-                                          ? Text(
-                                              "${card['type']}",
+                                          ? Text("${card['type']}",
                                               textAlign: TextAlign.center,
-                                          style: TextStyle(color: canPlayCard(card) ? getCardColor(card) : null, fontSize: 30)
-                                            )
-                                          : Column(children: [
-                                              ElevatedButton(
-                                                onPressed: () {
-                                                  Map newCard =
-                                                      new Map.from(card);
-                                                  setState(() {
-                                                    newCard['chosenColor'] =
-                                                        'red';
-                                                    gameData['players'][mpdata[
-                                                                'playerID']]
-                                                            ['cards']
-                                                        .remove(card);
-                                                    gameData['players'][mpdata[
-                                                                'playerID']]
-                                                            ['cards']
-                                                        .add(newCard);
-                                                  });
-                                                },
-                                                style: ElevatedButton.styleFrom(
-                                                    minimumSize:
-                                                        const Size(80, 20)),
-                                                child: const Text("Red",
-                                                    style: TextStyle(
-                                                        color: Colors.red)),
-                                              ),
-                                              ElevatedButton(
-                                                onPressed: () {
-                                                  Map newCard =
-                                                      new Map.from(card);
-                                                  setState(() {
-                                                    newCard['chosenColor'] =
-                                                        'blue';
-                                                    gameData['players'][mpdata[
-                                                                'playerID']]
-                                                            ['cards']
-                                                        .remove(card);
-                                                    gameData['players'][mpdata[
-                                                                'playerID']]
-                                                            ['cards']
-                                                        .add(newCard);
-                                                  });
-                                                },
-                                                style: ElevatedButton.styleFrom(
-                                                    minimumSize:
-                                                        const Size(80, 20)),
-                                                child: const Text("Blue",
-                                                    style: TextStyle(
-                                                        color: Colors.blue)),
-                                              ),
-                                              ElevatedButton(
-                                                onPressed: () {
-                                                  Map newCard =
-                                                      new Map.from(card);
-                                                  setState(() {
-                                                    newCard['chosenColor'] =
-                                                        'green';
-                                                    gameData['players'][mpdata[
-                                                                'playerID']]
-                                                            ['cards']
-                                                        .remove(card);
-                                                    gameData['players'][mpdata[
-                                                                'playerID']]
-                                                            ['cards']
-                                                        .add(newCard);
-                                                  });
-                                                },
-                                                style: ElevatedButton.styleFrom(
-                                                    minimumSize:
-                                                        const Size(80, 20)),
-                                                child: const Text("Green",
-                                                    style: TextStyle(
-                                                        color: Colors.green)),
-                                              ),
-                                              ElevatedButton(
-                                                onPressed: () {
-                                                  Map newCard =
-                                                      new Map.from(card);
-                                                  setState(() {
-                                                    newCard['chosenColor'] =
-                                                        'yellow';
-                                                    gameData['players'][mpdata[
-                                                                'playerID']]
-                                                            ['cards']
-                                                        .remove(card);
-                                                    gameData['players'][mpdata[
-                                                                'playerID']]
-                                                            ['cards']
-                                                        .add(newCard);
-                                                  });
-                                                },
-                                                style: ElevatedButton.styleFrom(
-                                                    minimumSize:
-                                                        const Size(80, 20)),
-                                                child: const Text(
-                                                  "Yellow",
-                                                  style: TextStyle(
-                                                      color: Color.fromARGB(
-                                                          255, 195, 176, 3)),
-                                                ),
-                                              ),
-                                            ]),
+                                              style: TextStyle(
+                                                  color: canPlayCard(card)
+                                                      ? getCardColor(card, null)
+                                                      : null,
+                                                  fontSize: 30))
+                                          : Column(
+                                              children: wildcolors
+                                                  .map<Widget>((color) =>
+                                                      ElevatedButton(
+                                                        onPressed: () {
+                                                          Map newCard =
+                                                              new Map.from(
+                                                                  card);
+                                                          setState(() {
+                                                            newCard['chosenColor'] =
+                                                                color;
+                                                            gameData['players'][
+                                                                        mpdata[
+                                                                            'playerID']]
+                                                                    ['cards']
+                                                                .remove(card);
+                                                            gameData['players'][
+                                                                        mpdata[
+                                                                            'playerID']]
+                                                                    ['cards']
+                                                                .add(newCard);
+                                                          });
+                                                        },
+                                                        style: ElevatedButton
+                                                            .styleFrom(
+                                                                minimumSize:
+                                                                    const Size(
+                                                                        80,
+                                                                        20)),
+                                                        child: const Text(color,
+                                                            style: TextStyle(
+                                                                color:
+                                                                    getCardColor(
+                                                                        null,
+                                                                        color))),
+                                                      ))
+                                                  .toList()),
                                 ),
                               ))
                           .toList(),
@@ -918,14 +854,15 @@ class _MyHomePageState extends State<MyHomePage>
                       },
                       style: ElevatedButton.styleFrom(
                           backgroundColor:
-                              getCardColor(gameData['stack']['current']),
+                              getCardColor(gameData['stack']['current'], null),
                           minimumSize: const Size(40, 100),
                           alignment: Alignment.center),
                       child: !gameData['stack']['current']['special']
                           ? Text(
                               "${gameData['stack']['current']['number'].toString()}",
                               textAlign: TextAlign.center,
-                              style: TextStyle(color: Colors.white, fontSize: 30),
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 30),
                             )
                           : Text(
                               "${gameData['stack']['current']['type']}",
