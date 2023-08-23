@@ -1,36 +1,38 @@
-import 'dart:io' show Platform;
-import 'dart:math';
-import 'dart:async';
+// ignore_for_file: file_names
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:vibration/vibration.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
-import 'mp_chooser.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:unoweb/classes/Card.dart';
 
 class UselessGameUtils {
-  static Color getCardColor(Map? card, String? color) {
-    var newCard = {};
-    if (card == null) {
-      newCard = {'color': color!.toLowerCase()};
-    } else {
-      newCard = card;
-    }
-    switch (newCard['color'] == 'wild'
-        ? newCard['chosenColor']
-        : newCard['color']) {
-      case 'red':
+  static Color getCardColor(GameCard card) {
+    switch (card.type != null && card.type == CardType.wnormal ||
+            card.type == CardType.wplus4
+        ? card.chosenColor!
+        : card.color) {
+      case CardColor.red:
         return (Colors.red);
-      case 'blue':
+      case CardColor.blue:
         return (Colors.blue);
-      case 'green':
+      case CardColor.green:
         return (Colors.green);
-      case 'yellow':
+      case CardColor.yellow:
         return (const Color.fromARGB(255, 195, 176, 3));
       default:
         return (Colors.black);
+    }
+  }
+
+  static bool canPlayCard(GameCard card, gameData) {
+    if (((card.type == CardType.wnormal ||
+            card.type == CardType.wplus4 && (card.chosenColor != null)) ||
+        (card.color == gameData['stack']['current'].color) ||
+        card.number == gameData['stack']['current'].number ||
+        (card.special && card.type == CardType.wnormal ||
+            card.type == CardType.wplus4) ||
+        (card.color == gameData['stack']['current'].chosenColor))) {
+      return true;
+    } else {
+      return false;
     }
   }
 }

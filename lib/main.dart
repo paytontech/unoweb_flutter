@@ -12,6 +12,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'mp_chooser.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'classes/Card.dart';
+import 'classes/Game.dart';
+import 'classes/Player.dart';
 
 void main() async {
   runApp(const MyApp());
@@ -54,7 +57,7 @@ class _MyHomePageState extends State<MyHomePage>
   };
 
   bool multiplayer = false;
-  List<Map> cards = [];
+  List<GameCard> cards = [];
   bool invalidAttemptError = false;
   String errTxt = "";
   Color bg = Colors.white;
@@ -65,39 +68,31 @@ class _MyHomePageState extends State<MyHomePage>
 
   void genCards() {
     for (var i = 0; i < 10; i++) {
-      cards.add({'color': 'red', 'number': i, 'special': false});
+      cards.add(GameCard(CardColor.red, i));
     }
-    //colored special (+4, +2, reverse, skip)
-    cards.add({'color': 'red', 'type': '+2', 'special': true});
-    cards.add({'color': 'red', 'type': 'reverse', 'special': true});
-    cards.add({'color': 'red', 'type': 'skip', 'special': true});
+    cards.add(GameCard.special(CardColor.red, CardType.plus2));
+    cards.add(GameCard.special(CardColor.red, CardType.reverse));
+    cards.add(GameCard.special(CardColor.red, CardType.skip));
     for (var i = 0; i < 10; i++) {
-      cards.add({'color': 'blue', 'number': i, 'special': false});
+      cards.add(GameCard(CardColor.blue, i));
     }
-    cards.add({'color': 'blue', 'type': '+2', 'special': true});
-    cards.add({'color': 'blue', 'type': 'reverse', 'special': true});
-    cards.add({'color': 'blue', 'type': 'skip', 'special': true});
+    cards.add(GameCard.special(CardColor.blue, CardType.plus2));
+    cards.add(GameCard.special(CardColor.blue, CardType.reverse));
+    cards.add(GameCard.special(CardColor.blue, CardType.skip));
     for (var i = 0; i < 10; i++) {
-      cards.add({'color': 'green', 'number': i, 'special': false});
+      cards.add(GameCard(CardColor.yellow, i));
     }
-    cards.add({'color': 'green', 'type': '+2', 'special': true});
-    cards.add({'color': 'green', 'type': 'reverse', 'special': true});
-    cards.add({'color': 'green', 'type': 'skip', 'special': true});
+    cards.add(GameCard.special(CardColor.green, CardType.plus2));
+    cards.add(GameCard.special(CardColor.green, CardType.reverse));
+    cards.add(GameCard.special(CardColor.green, CardType.skip));
     for (var i = 0; i < 10; i++) {
-      cards.add({'color': 'yellow', 'number': i, 'special': false});
+      cards.add(GameCard(CardColor.yellow, i));
     }
-    cards.add({'color': 'yellow', 'type': '+2', 'special': true});
-    cards.add({'color': 'yellow', 'type': 'reverse', 'special': true});
-    cards.add({'color': 'yellow', 'type': 'skip', 'special': true});
-    //wild cards
-    cards.add({
-      'color': 'wild',
-      'type': 'normal',
-      'special': true,
-      'chosenColor': ''
-    });
-    cards.add(
-        {'color': 'wild', 'type': '+4', 'special': true, 'chosenColor': ''});
+    cards.add(GameCard.special(CardColor.yellow, CardType.plus2));
+    cards.add(GameCard.special(CardColor.yellow, CardType.reverse));
+    cards.add(GameCard.special(CardColor.yellow, CardType.skip));
+    cards.add(GameCard.wild(CardType.wnormal));
+    cards.add(GameCard.wild(CardType.wplus4));
   }
 
   var window = WidgetsBinding.instance.window;
@@ -168,12 +163,9 @@ class _MyHomePageState extends State<MyHomePage>
     print("bot attempting play..");
     if (gameData['currentPlayer'] > mpdata['playerID']) {
       Map bot = gameData['players'][gameData['currentPlayer']];
-      List<Map> possibleCards = [];
+      List<GameCard> possibleCards = [];
       for (var card in bot['cards']) {
-        if (card['color'] == gameData['stack']['current']['color'] ||
-            card['number'] == gameData['stack']['current']['number'] ||
-            (card['special'] && card['color'] == 'wild') ||
-            (card['color'] == gameData['stack']['current']['chosenColor'])) {
+        if (UselessGameUtils.canPlayCard(card, gameData)) {
           possibleCards.add(card);
         }
       }
@@ -186,11 +178,13 @@ class _MyHomePageState extends State<MyHomePage>
       } else {
         //cards available
 
-        Map chosenCard = possibleCards[Random().nextInt(possibleCards.length)];
+        GameCard chosenCard =
+            possibleCards[Random().nextInt(possibleCards.length)];
         Map checkedCard = new Map.from(chosenCard);
         bot['cards'].remove(chosenCard);
         bot['cards'].add(checkedCard);
-        if (chosenCard['color'] == 'wild') {
+        if (chosenCard.type == CardType.wnormal ||
+            chosenCard.type == CardType.wplus4) {
           int red = 0;
           int blue = 0;
           int green = 0;
@@ -225,14 +219,14 @@ class _MyHomePageState extends State<MyHomePage>
     }
   }
 
-  void playCard(card, playerID) async {
+  void playCard(GameCard card, playerID) async {
     print("play attempted: $playerID");
     if (playerID == gameData['currentPlayer']) {
       //valid
-      if (canPlayCard(card)) {
+      if (UselessGameUtils.canPlayCard(card, gameData)) {
         //valid
-        if (card['special'] && card['type'] != "normal") {
-          if (card['type'] == '+2') {
+        if (card.special) {
+          if (card.type == CardType.plus2) {
             print("+2 card, giving 2 cards to ${getNextPlayer()}");
             //draw 2
             for (var i = 0; i < 2; i++) {
@@ -241,13 +235,13 @@ class _MyHomePageState extends State<MyHomePage>
                     .add(cards[Random().nextInt(cards.length)]);
               });
             }
-          } else if (card['type'] == "+4") {
+          } else if (card.type == CardType.wplus4) {
             print("+4 card, giving 2 cards to ${getNextPlayer()}");
             for (var i = 0; i < 4; i++) {
               gameData['players'][getNextPlayer()]['cards']
                   .add(cards[Random().nextInt(cards.length)]);
             }
-          } else if (card['type'] == 'reverse') {
+          } else if (card.type == CardType.reverse) {
             if (gameData['reversed']) {
               setState(() {
                 gameData['reversed'] = false;
@@ -279,7 +273,7 @@ class _MyHomePageState extends State<MyHomePage>
         }
         print(
             "current player ($playerID) card mount: ${gameData['players'][playerID]['cards'].length}");
-        if (card['type'] == 'skip') {
+        if (card.type == CardType.skip) {
           updatePlayer(1);
         } else {
           updatePlayer();
@@ -392,8 +386,7 @@ class _MyHomePageState extends State<MyHomePage>
     if (gameData['currentPlayer'] == mpdata['playerID']) {
       _color = ColorTween(
               begin: Colors.white,
-              end: UselessGameUtils.getCardColor(
-                  gameData['stack']['current'], null))
+              end: UselessGameUtils.getCardColor(gameData['stack']['current']))
           .animate(_controller);
       _controller.forward();
       await Future.delayed(const Duration(milliseconds: 250));
@@ -410,8 +403,8 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   void mpGetStack() {
-    Map stackCard = cards[Random().nextInt(cards.length)];
-    if (stackCard['special']) {
+    GameCard stackCard = cards[Random().nextInt(cards.length)];
+    if (stackCard.special) {
       return;
     } else {
       gameData['stack']['current'] = stackCard;
@@ -434,8 +427,8 @@ class _MyHomePageState extends State<MyHomePage>
 
   void dealCards(playerCount) async {
     if (!multiplayer) {
-      Map stackCard = cards[Random().nextInt(cards.length)];
-      if (stackCard['special']) {
+      GameCard stackCard = cards[Random().nextInt(cards.length)];
+      if (stackCard.special) {
         cards[Random().nextInt(cards.length)];
         dealCards(playerCount);
         return;
@@ -473,18 +466,6 @@ class _MyHomePageState extends State<MyHomePage>
       } else {
         botPlay();
       }
-    }
-  }
-
-  bool canPlayCard(card) {
-    if (((card['color'] == 'wild' && (card['chosenColor'] != '')) ||
-        (card['color'] == gameData['stack']['current']['color']) ||
-        card['number'] == gameData['stack']['current']['number'] ||
-        (card['special'] && card['color'] == 'wild') ||
-        (card['color'] == gameData['stack']['current']['chosenColor']))) {
-      return true;
-    } else {
-      return false;
     }
   }
 
@@ -683,9 +664,9 @@ class _MyHomePageState extends State<MyHomePage>
                       ),
                     if (multiplayer) Text("Code: ${mpdata['code']}"),
                     if (gameData['reversed'])
-                      Row(
+                      const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
+                        children: [
                           Icon(
                             Icons.repeat,
                             color: Colors.grey,
@@ -730,19 +711,21 @@ class _MyHomePageState extends State<MyHomePage>
                           .map<Widget>((card) => PlayerCardState(
                               card: card,
                               playerID: mpdata['playerID'],
-                              canPlay: canPlayCard(card),
+                              canPlay:
+                                  UselessGameUtils.canPlayCard(card, gameData),
                               playCard: (gameData['currentPlayer'] ==
                                           mpdata['playerID'] &&
-                                      canPlayCard(card))
+                                      UselessGameUtils.canPlayCard(
+                                          card, gameData))
                                   ? () {
                                       playCard(card, mpdata['playerID']);
                                     }
                                   : null,
                               wildColorChosen: (ccolor) {
                                 print(ccolor);
-                                Map newCard = new Map.from(card);
+                                GameCard newCard = GameCard.wild(card.type);
                                 setState(() {
-                                  newCard['chosenColor'] = ccolor.toLowerCase();
+                                  newCard.chosenColor = ccolor.color;
                                   gameData['players'][mpdata['playerID']]
                                           ['cards']
                                       .remove(card);
@@ -777,11 +760,11 @@ class _MyHomePageState extends State<MyHomePage>
                         },
                         style: ElevatedButton.styleFrom(
                             backgroundColor: UselessGameUtils.getCardColor(
-                                gameData['stack']['current'], null),
+                                gameData['stack']['current']),
                             minimumSize: const Size(40, 100),
                             alignment: Alignment.center),
                         child: Text(
-                          "${gameData['stack']['current']['special'] ? gameData['stack']['current']['type'] : gameData['stack']['current']['number'].toString()}",
+                          "${gameData['stack']['current'].special ? gameData['stack']['current'].type!.name : gameData['stack']['current'].number.toString()}",
                           textAlign: TextAlign.center,
                           style: TextStyle(color: Colors.white, fontSize: 30),
                         )),
@@ -850,18 +833,24 @@ class PlayerCardState extends StatefulWidget {
       required this.playCard,
       required this.wildColorChosen});
 
-  final Map card;
+  final GameCard card;
   final int playerID;
   final bool canPlay;
   final Function()? playCard;
-  final Function(String)? wildColorChosen;
+  final Function(WildColor)? wildColorChosen;
 
   @override
   State<PlayerCardState> createState() => _PlayerCardState();
 }
 
 class _PlayerCardState extends State<PlayerCardState> {
-  var wildcolors = ["Red", "Blue", "Green", "Yellow"];
+  // var wildcolors = ["Red", "Blue", "Green", "Yellow"];
+  var wildcolors = [
+    WildColor("Red", CardColor.red),
+    WildColor("Blue", CardColor.blue),
+    WildColor("Green", CardColor.green),
+    WildColor("Yellow", CardColor.yellow)
+  ];
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -871,40 +860,40 @@ class _PlayerCardState extends State<PlayerCardState> {
         style: ElevatedButton.styleFrom(
           minimumSize: const Size(100, 120),
           shadowColor: widget.canPlay
-              ? UselessGameUtils.getCardColor(widget.card, null)
+              ? UselessGameUtils.getCardColor(widget.card)
               : null,
           elevation: widget.canPlay ? 22.0 : null,
         ),
-        child: !widget.card['special']
+        child: !widget.card.special
             ? Text(
-                "${widget.card['number'].toString()}",
+                "${widget.card.number.toString()}",
                 textAlign: TextAlign.center,
                 style: widget.canPlay
                     ? TextStyle(
-                        color: UselessGameUtils.getCardColor(widget.card, null),
+                        color: UselessGameUtils.getCardColor(widget.card),
                         fontSize: 30)
                     : null,
               )
-            : !(widget.card['chosenColor'] == '')
-                ? Text("${widget.card['type']}",
+            : !(widget.card.chosenColor == '')
+                ? Text("${widget.card.type!.name}",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                         color: widget.canPlay
-                            ? UselessGameUtils.getCardColor(widget.card, null)
+                            ? UselessGameUtils.getCardColor(widget.card)
                             : null,
                         fontSize: 30))
                 : Column(
                     children: wildcolors
                         .map<Widget>((ccolor) => ElevatedButton(
                               onPressed: () {
-                                widget.wildColorChosen!(ccolor.toLowerCase());
+                                widget.wildColorChosen!(ccolor);
                               },
                               style: ElevatedButton.styleFrom(
                                   minimumSize: const Size(80, 20)),
-                              child: Text(ccolor,
+                              child: Text(ccolor.name,
                                   style: TextStyle(
                                       color: UselessGameUtils.getCardColor(
-                                          null, ccolor))),
+                                          GameCard.color(ccolor.color)))),
                             ))
                         .toList()),
       ),
