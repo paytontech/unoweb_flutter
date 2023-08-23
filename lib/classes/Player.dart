@@ -21,8 +21,14 @@ class Player {
   Player.multiplayer(this.id, this.cards, this.username, this.uid) {
     this.bot = false;
   }
+  Player.empty() {}
+
   drawCard(List<GameCard> possibleCards, Game gameData) {
     this.cards.add(possibleCards[Random().nextInt(possibleCards.length)]);
     gameData.nextPlayer();
+  }
+
+  addCard(GameCard card) {
+    cards.add(card);
   }
 }

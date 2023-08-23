@@ -32,6 +32,7 @@ class GameCard {
     this.special = card.special;
     this.chosenColor = card.chosenColor;
   }
+  GameCard.empty() {}
 }
 
 class WildColor {

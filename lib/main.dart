@@ -15,6 +15,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'classes/Card.dart';
 import 'classes/Game.dart';
 import 'classes/Player.dart';
+import 'package:class_to_map/class_to_map.dart';
 
 void main() async {
   runApp(const MyApp());
@@ -47,16 +48,15 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage>
     with TickerProviderStateMixin, WidgetsBindingObserver {
-  Map gameData = {
-    'players': [],
-    'currentPlayer': 0,
-    'stack': {'current': {}, 'prev': []},
-    'winState': {'winnerChosen': false, 'winner': {}},
-    'reversed': false,
-    'playerCount': 0
-  };
-
-  bool multiplayer = false;
+  // Map gameData = {
+  //   'players': [],
+  //   'currentPlayer': 0,
+  //   'stack': {'current': {}, 'prev': []},
+  //   'winState': {'winnerChosen': false, 'winner': {}},
+  //   'reversed': false,
+  //   'playerCount': 0
+  // };
+  Game gameData = Game();
   List<GameCard> cards = [];
   bool invalidAttemptError = false;
   String errTxt = "";
@@ -161,10 +161,10 @@ class _MyHomePageState extends State<MyHomePage>
 
   void botPlay() async {
     print("bot attempting play..");
-    if (gameData['currentPlayer'] > mpdata['playerID']) {
-      Map bot = gameData['players'][gameData['currentPlayer']];
+    if (gameData.currentPlayer!.id > mpdata['playerID']) {
+      Player bot = gameData.currentPlayer!;
       List<GameCard> possibleCards = [];
-      for (var card in bot['cards']) {
+      for (var card in bot.cards) {
         if (UselessGameUtils.canPlayCard(card, gameData)) {
           possibleCards.add(card);
         }
@@ -173,46 +173,46 @@ class _MyHomePageState extends State<MyHomePage>
       if (possibleCards.isEmpty) {
         await Future.delayed(const Duration(seconds: 3));
         print('bot has no cards');
-        drawCard(bot['id']);
+        drawCard(bot);
         botPlay();
       } else {
         //cards available
 
         GameCard chosenCard =
             possibleCards[Random().nextInt(possibleCards.length)];
-        Map checkedCard = new Map.from(chosenCard);
-        bot['cards'].remove(chosenCard);
-        bot['cards'].add(checkedCard);
+        GameCard checkedCard = GameCard.from(chosenCard);
+        bot.cards.remove(chosenCard);
+        bot.cards.add(checkedCard);
         if (chosenCard.type == CardType.wnormal ||
             chosenCard.type == CardType.wplus4) {
           int red = 0;
           int blue = 0;
           int green = 0;
           int yellow = 0;
-          for (var card in bot['cards']) {
-            switch (card['color']) {
-              case 'red':
+          for (var card in bot.cards) {
+            switch (card.color) {
+              case CardColor.red:
                 red += 1;
                 break;
-              case 'blue':
+              case CardColor.blue:
                 blue += 1;
                 break;
-              case 'green':
+              case CardColor.green:
                 green += 1;
                 break;
-              case 'yellow':
+              case CardColor.yellow:
                 yellow += 1;
                 break;
             }
             int highest = [red, blue, green, yellow].reduce(max);
-            if (red == highest) checkedCard['chosenColor'] = 'red';
-            if (blue == highest) checkedCard['chosenColor'] = 'blue';
-            if (yellow == highest) checkedCard['chosenColor'] = 'yellow';
-            if (green == highest) checkedCard['chosenColor'] = 'green';
+            if (red == highest) checkedCard.chosenColor = CardColor.red;
+            if (blue == highest) checkedCard.chosenColor = CardColor.blue;
+            if (yellow == highest) checkedCard.chosenColor = CardColor.yellow;
+            if (green == highest) checkedCard.chosenColor = CardColor.green;
           }
         }
         await Future.delayed(const Duration(seconds: 3));
-        playCard(checkedCard, bot['id']);
+        playCard(checkedCard, bot.id);
       }
     } else {
       print("bot cannot play!");
@@ -221,7 +221,7 @@ class _MyHomePageState extends State<MyHomePage>
 
   void playCard(GameCard card, playerID) async {
     print("play attempted: $playerID");
-    if (playerID == gameData['currentPlayer']) {
+    if (playerID == gameData.currentPlayer!.id) {
       //valid
       if (UselessGameUtils.canPlayCard(card, gameData)) {
         //valid
@@ -231,24 +231,24 @@ class _MyHomePageState extends State<MyHomePage>
             //draw 2
             for (var i = 0; i < 2; i++) {
               setState(() {
-                gameData['players'][getNextPlayer()]['cards']
-                    .add(cards[Random().nextInt(cards.length)]);
+                gameData.players[getNextPlayer()].cards
+                    .add(UselessGameUtils.randomCard(cards));
               });
             }
           } else if (card.type == CardType.wplus4) {
             print("+4 card, giving 2 cards to ${getNextPlayer()}");
             for (var i = 0; i < 4; i++) {
-              gameData['players'][getNextPlayer()]['cards']
-                  .add(cards[Random().nextInt(cards.length)]);
+              gameData.players[getNextPlayer()].cards
+                  .add(UselessGameUtils.randomCard(cards));
             }
           } else if (card.type == CardType.reverse) {
-            if (gameData['reversed']) {
+            if (gameData.reversed) {
               setState(() {
-                gameData['reversed'] = false;
+                gameData.reversed = false;
               });
             } else {
               setState(() {
-                gameData['reversed'] = true;
+                gameData.reversed = true;
               });
             }
           }
@@ -262,9 +262,9 @@ class _MyHomePageState extends State<MyHomePage>
           errTxt = "";
         });
         setState(() {
-          gameData['stack']['prev'].add(gameData['stack']['current']);
-          gameData['stack']['current'] = card;
-          gameData['players'][playerID]['cards'].remove(card);
+          gameData.stack.prev.add(gameData.stack.current!);
+          gameData.stack.current = card;
+          gameData.players[playerID].cards.remove(card);
         });
         if (playerID == mpdata['playerID']) {
           await analytics.logEvent(
@@ -272,24 +272,24 @@ class _MyHomePageState extends State<MyHomePage>
               parameters: {'card': card.toString(), 'successful': "true"});
         }
         print(
-            "current player ($playerID) card mount: ${gameData['players'][playerID]['cards'].length}");
+            "current player ($playerID) card mount: ${gameData.players[playerID].cards.length}");
         if (card.type == CardType.skip) {
           updatePlayer(1);
         } else {
           updatePlayer();
         }
-        if (!multiplayer) {
+        if (!gameData.multiplayer) {
           botPlay();
         }
 
-        if (multiplayer) {
+        if (gameData.multiplayer) {
           FirebaseFirestore.instance
               .collection("active")
               .doc(mpdata['code'].toString())
-              .update({'gameData': gameData});
+              .update({'gameData': gameData.toMap()});
         }
       } else {
-        if (gameData['currentPlayer'] == playerID) {
+        if (gameData.currentPlayer!.id == playerID) {
           setState(() {
             invalidAttemptError = true;
             errTxt = "Inavlid Play!";
@@ -303,12 +303,12 @@ class _MyHomePageState extends State<MyHomePage>
       }
     } else {
       //invalid
-      if (gameData['currentPlayer'] == mpdata['playerID']) {
+      if (gameData.currentPlayer! == mpdata['playerID']) {
         await analytics.logEvent(
             name: "play_card_attempt",
             parameters: {'card': card.toString(), 'successful': "false"});
       }
-      if (gameData['currentPlayer'] == playerID) {
+      if (gameData.currentPlayer! == playerID) {
         setState(() {
           invalidAttemptError = true;
           errTxt = "It's not your turn!";
@@ -322,71 +322,74 @@ class _MyHomePageState extends State<MyHomePage>
     }
   }
 
+  //TODO - get rid of this & integrate it into game
   int getNextPlayer() {
-    if (!gameData['reversed']) {
-      if (gameData['currentPlayer'] >= (gameData['players'].length - 1)) {
+    if (!gameData.reversed) {
+      if (gameData.currentPlayer!.id >= (gameData.players.length - 1)) {
         return 0;
       } else {
-        return (gameData['currentPlayer']) + 1;
+        return (gameData.currentPlayer!.id) + 1;
       }
     } else {
-      if (gameData['currentPlayer'] > 0) {
-        return gameData['currentPlayer'] - 1;
+      if (gameData.currentPlayer!.id > 0) {
+        return gameData.currentPlayer!.id - 1;
       } else {
-        return (gameData['players'].length) - 1;
+        return (gameData.players.length) - 1;
       }
     }
   }
 
+  //TODO - remove this & integrate it into game
   void updatePlayer([int offset = 0]) async {
-    for (var player in gameData['players']) {
-      if (player['cards'].isEmpty) {
+    for (var player in gameData.players) {
+      if (player.cards.isEmpty) {
         setState(() {
-          gameData['winState']['winnerChosen'] = true;
-          gameData['winState']['winner'] = player;
+          gameData.winState.winnerChosen = true;
+          gameData.winState.winner = player;
         });
       }
     }
-    if (gameData['reversed']) {
+    if (gameData.reversed) {
       print("reversed..");
-      if (gameData['currentPlayer'] == 0 && offset != 0) {
+      if (gameData.currentPlayer!.id == 0 && offset != 0) {
         //if player is 0, game is reversed, and offset is not zero
         print(
-            "offset not zero, player 0. going to player ${(gameData['players'].length - 1) - offset}");
+            "offset not zero, player 0. going to player ${(gameData.players.length - 1) - offset}");
         setState(() {
-          gameData['currentPlayer'] = (gameData['players'].length - 1) - offset;
+          gameData.currentPlayer =
+              gameData.players[(gameData.players.length - 1) - offset];
         });
       } else if (offset == 0) {
         print(
             "game reversed. offset not set. going to player ${getNextPlayer()}");
         setState(() {
-          gameData['currentPlayer'] = getNextPlayer();
+          gameData.nextPlayer();
         });
       }
     } else {
-      if (getNextPlayer() == (gameData['players'].length - 1) && offset != 0) {
+      if (getNextPlayer() == (gameData.players.length - 1) && offset != 0) {
         //if current player is the last player & offset is 0
         print(
-            "game not reversed. player ${gameData['players'].length - 1}(last player). going to ${0 + offset}");
+            "game not reversed. player ${gameData.players.length - 1}(last player). going to ${0 + offset}");
         setState(() {
-          gameData['currentPlayer'] = 0 + offset;
+          gameData.currentPlayer = gameData.players[0 + offset];
         });
       } else if (offset != 0) {
         print(
-            "game not reversed. player ${gameData['players'].length - 1}. offset 0");
+            "game not reversed. player ${gameData.players.length - 1}. offset 0");
         setState(() {
-          gameData['currentPlayer'] = getNextPlayer() + offset;
+          gameData.currentPlayer = gameData.players[getNextPlayer() + offset];
         });
       } else if (offset == 0) {
         setState(() {
-          gameData['currentPlayer'] = getNextPlayer();
+          gameData.currentPlayer = gameData.players[getNextPlayer()];
         });
       }
     }
-    if (gameData['currentPlayer'] == mpdata['playerID']) {
+    if (gameData.currentPlayer!.id == mpdata['playerID']) {
       _color = ColorTween(
               begin: Colors.white,
-              end: UselessGameUtils.getCardColor(gameData['stack']['current']))
+              end: UselessGameUtils.getCardColor(gameData.stack.current!))
           .animate(_controller);
       _controller.forward();
       await Future.delayed(const Duration(milliseconds: 250));
@@ -407,78 +410,57 @@ class _MyHomePageState extends State<MyHomePage>
     if (stackCard.special) {
       return;
     } else {
-      gameData['stack']['current'] = stackCard;
+      gameData.stack.current = stackCard;
     }
   }
 
   void mpDealCard(String? username, String? uid) {
-    gameData['players'].add({
-      'id': gameData['players'].length,
-      'cards': [],
-      'bot': false,
-      'uid': uid,
-      'username': username
-    });
+    gameData.addPlayer(
+        Player.multiplayer(gameData.players.length, [], username, uid));
     for (var z = 0; z < 7; z++) {
-      gameData['players'][gameData['playerCount'] - 1]['cards']
-          .add(cards[Random().nextInt(cards.length)]);
+      gameData.players[gameData.playerCount - 1]
+          .addCard(UselessGameUtils.randomCard(cards));
     }
   }
 
   void dealCards(playerCount) async {
-    if (!multiplayer) {
+    if (!gameData.multiplayer) {
       GameCard stackCard = cards[Random().nextInt(cards.length)];
       if (stackCard.special) {
-        cards[Random().nextInt(cards.length)];
         dealCards(playerCount);
         return;
       } else {
-        gameData['stack']['current'] = stackCard;
+        gameData.stack.current = stackCard;
       }
 
       for (var i = 0; i < playerCount; i++) {
         if (i == 0) {
-          gameData['players'].add({'id': i, 'cards': [], 'bot': false});
+          gameData.addPlayer(Player(i, []));
         } else {
-          gameData['players'].add({'id': i, 'cards': [], 'bot': true});
+          gameData.addPlayer(Player.bot(i, []));
         }
         for (var z = 0; z < 7; z++) {
-          gameData['players'][i]['cards']
-              .add(cards[Random().nextInt(cards.length)]);
+          gameData.players[i].addCard(UselessGameUtils.randomCard(cards));
         }
-        print(gameData['players'].length);
       }
     }
   }
 
-  void drawCard(playerID) {
-    if (gameData['currentPlayer'] == playerID) {
+  void drawCard(Player player) {
+    if (gameData.currentPlayer == player) {
       setState(() {
-        gameData['players'][playerID]['cards']
-            .add(cards[Random().nextInt(cards.length)]);
+        player.addCard(UselessGameUtils.randomCard(cards));
       });
       updatePlayer();
-      if (multiplayer) {
+      if (gameData.multiplayer) {
         FirebaseFirestore.instance
             .collection("active")
             .doc(mpdata['code'].toString())
-            .update({'gameData': gameData});
+            .update({'gameData': gameData.toMap()});
       } else {
         botPlay();
       }
     }
-  }
-
-  void resetGame(int? playerCount) {
-    setState(() {
-      gameData['players'] = [];
-      gameData['winState']['winner'] = {};
-      if (!multiplayer) {
-        dealCards(playerCount);
-      }
-      gameData['winState']['winnerChosen'] = false;
-      gameData['currentPlayer'] = 0;
-    });
   }
 
   void resetMP() {
@@ -487,6 +469,7 @@ class _MyHomePageState extends State<MyHomePage>
     });
   }
 
+  //TODO - remove & extract to own class
   void setupMultiplayer() {
     setState(() {
       mpdata['finishedLoading'] = false;
@@ -495,17 +478,17 @@ class _MyHomePageState extends State<MyHomePage>
     String host = mpdata['uid'];
     int state = mpdata['state'];
     setState(() {
-      multiplayer = true;
+      gameData.multiplayer = true;
     });
     if (state == 1) {
       //user is host
-      resetGame(0);
+      gameData.reset();
 
-      gameData['playerCount'] = 1;
+      gameData.playerCount = 1;
       mpdata['playerID'] = 0;
       mpDealCard(mpdata['username'], mpdata['uid']);
       FirebaseFirestore.instance.collection("active").doc(code.toString()).set({
-        "gameData": gameData,
+        "gameData": gameData.toMap(),
         "host": host,
         "players": [host]
       }).then((value) {
@@ -527,16 +510,17 @@ class _MyHomePageState extends State<MyHomePage>
           current.add(mpdata['uid']);
           print(current);
           setState(() {
-            final updatedData = data?['gameData'];
+            final Map<String, dynamic> updatedData = data?['gameData'];
             updatedData['playerCount'] += 1;
             mpdata['playerID'] = updatedData['playerCount'] - 1;
-            gameData = updatedData;
+            gameData = updatedData.toClass<Game>();
             mpDealCard(mpdata['username'], mpdata['uid']);
           });
           FirebaseFirestore.instance
               .collection("active")
               .doc(code.toString())
-              .update({"players": current, "gameData": gameData}).then((value) {
+              .update({"players": current, "gameData": gameData.toMap()}).then(
+                  (value) {
             setState(() {
               mpdata['finishedLoading'] = true;
             });
@@ -554,10 +538,11 @@ class _MyHomePageState extends State<MyHomePage>
         .listen((snapshot) {
       if (snapshot.exists) {
         setState(() {
-          gameData = snapshot.data()?['gameData'];
+          Map<String, dynamic> data = snapshot.data()?['gameData'];
+          gameData = data.toClass<Game>();
         });
       } else {
-        resetGame(4);
+        gameData.reset();
       }
     });
   }
@@ -576,17 +561,17 @@ class _MyHomePageState extends State<MyHomePage>
   @override
   Widget build(BuildContext context) {
     Widget game;
-    if (gameData['winState']['winnerChosen'] == true) {
+    if (gameData.winState.winnerChosen == true) {
       game = Scaffold(
         appBar: AppBar(title: const Text("Game Over!")),
         body: Center(
             child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            if (!multiplayer)
-              if (gameData['winState']['winner']['bot'])
+            if (!gameData.multiplayer)
+              if (gameData.winState.winner!.bot)
                 Text(
-                  "Bot ${gameData['winState']['winner']['id']} has won!",
+                  "Bot ${gameData.winState.winner!.bot} has won!",
                   style: const TextStyle(
                       color: Colors.red,
                       fontWeight: FontWeight.bold,
@@ -600,16 +585,16 @@ class _MyHomePageState extends State<MyHomePage>
                       fontWeight: FontWeight.bold,
                       fontSize: 50),
                 ),
-            if (multiplayer)
-              if (gameData['winState']['winner']['id'] != mpdata['playerID'])
+            if (gameData.multiplayer)
+              if (gameData.winState.winner!.id != mpdata['playerID'])
                 Text(
-                  "${gameData['winState']['winner']['username']} has won!",
+                  "${gameData.winState.winner!.username} has won!",
                   style: const TextStyle(
                       color: Colors.red,
                       fontWeight: FontWeight.bold,
                       fontSize: 50),
                 ),
-            if (gameData['winState']['winner']['id'] == mpdata['playerID'])
+            if (gameData.winState.winner!.id == mpdata['playerID'])
               const Text(
                 "You Win!",
                 style: TextStyle(
@@ -619,8 +604,10 @@ class _MyHomePageState extends State<MyHomePage>
               ),
             ElevatedButton(
                 onPressed: () {
-                  if (!multiplayer) {
-                    resetGame(4);
+                  if (!gameData.multiplayer) {
+                    setState(() {
+                      gameData.reset();
+                    });
                   } else {}
                 },
                 child: const Text("Restart"))
@@ -646,7 +633,7 @@ class _MyHomePageState extends State<MyHomePage>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    if (multiplayer)
+                    if (gameData.multiplayer)
                       ElevatedButton(
                         onPressed: () {
                           FirebaseFirestore.instance
@@ -655,15 +642,15 @@ class _MyHomePageState extends State<MyHomePage>
                               .delete();
                           setState(() {
                             mpdata['finishedLoading'] = false;
+                            gameData.reset();
                           });
-                          resetGame(4);
                         },
                         child: Text("Leave"),
                         style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.red),
                       ),
-                    if (multiplayer) Text("Code: ${mpdata['code']}"),
-                    if (gameData['reversed'])
+                    if (gameData.multiplayer) Text("Code: ${mpdata['code']}"),
+                    if (gameData.reversed)
                       const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -677,15 +664,15 @@ class _MyHomePageState extends State<MyHomePage>
                           )
                         ],
                       ),
-                    if (gameData['currentPlayer'] != mpdata['playerID'])
-                      if (!multiplayer &&
-                          gameData['currentPlayer'] != mpdata['playerID'])
-                        Text("Current Player: ${gameData['currentPlayer']}"),
-                    if (multiplayer &&
-                        gameData['currentPlayer'] != mpdata['playerID'])
+                    if (gameData.currentPlayer.id != mpdata['playerID'])
+                      if (!gameData.multiplayer &&
+                          gameData.currentPlayer.id != mpdata['playerID'])
+                        Text("Current Player: ${gameData.currentPlayer!.id}"),
+                    if (gameData.multiplayer &&
+                        gameData.currentPlayer.id != mpdata['playerID'])
                       Text(
-                          "Current Player: ${gameData['players'][gameData['currentPlayer']]['username']}"),
-                    if (gameData['currentPlayer'] == mpdata['playerID'])
+                          "Current Player: ${gameData.currentPlayer!.username!}"),
+                    if (gameData.currentPlayer.id == mpdata['playerID'])
                       const Text(
                         "Your Turn!",
                         style: TextStyle(
@@ -707,13 +694,13 @@ class _MyHomePageState extends State<MyHomePage>
                       height: 20,
                     ),
                     Wrap(
-                      children: gameData['players'][mpdata['playerID']]['cards']
+                      children: gameData.players[mpdata['playerID']].cards
                           .map<Widget>((card) => PlayerCardState(
                               card: card,
                               playerID: mpdata['playerID'],
                               canPlay:
                                   UselessGameUtils.canPlayCard(card, gameData),
-                              playCard: (gameData['currentPlayer'] ==
+                              playCard: (gameData.currentPlayer!.id ==
                                           mpdata['playerID'] &&
                                       UselessGameUtils.canPlayCard(
                                           card, gameData))
@@ -723,14 +710,12 @@ class _MyHomePageState extends State<MyHomePage>
                                   : null,
                               wildColorChosen: (ccolor) {
                                 print(ccolor);
-                                GameCard newCard = GameCard.wild(card.type);
+                                GameCard newCard = GameCard.wild(card.type!);
                                 setState(() {
                                   newCard.chosenColor = ccolor.color;
-                                  gameData['players'][mpdata['playerID']]
-                                          ['cards']
+                                  gameData.players[mpdata['playerID']].cards
                                       .remove(card);
-                                  gameData['players'][mpdata['playerID']]
-                                          ['cards']
+                                  gameData.players[mpdata['playerID']].cards
                                       .add(newCard);
                                 });
                               }))
@@ -760,34 +745,34 @@ class _MyHomePageState extends State<MyHomePage>
                         },
                         style: ElevatedButton.styleFrom(
                             backgroundColor: UselessGameUtils.getCardColor(
-                                gameData['stack']['current']),
+                                gameData.stack.current!),
                             minimumSize: const Size(40, 100),
                             alignment: Alignment.center),
                         child: Text(
-                          "${gameData['stack']['current'].special ? gameData['stack']['current'].type!.name : gameData['stack']['current'].number.toString()}",
+                          "${gameData.stack.current!.special ? gameData.stack!.current!.type!.name : gameData.stack.current!.number.toString()}",
                           textAlign: TextAlign.center,
                           style: TextStyle(color: Colors.white, fontSize: 30),
                         )),
                     Wrap(
                       alignment: WrapAlignment.center,
-                      children: gameData['players']
+                      children: gameData.players
                           .map<Widget>((player) => Padding(
                                 padding: const EdgeInsets.all(15),
-                                child: (!multiplayer)
-                                    ? player['bot']
+                                child: (!gameData.multiplayer)
+                                    ? player.bot
                                         ? Text(
-                                            "Bot ${player['id']}\n${player['cards'].length} card(s) left",
+                                            "Bot ${player.id}\n${player.cards.length} card(s) left",
                                             textAlign: TextAlign.center)
                                         : Text(
-                                            "You\n${player['cards'].length} card(s) left",
+                                            "You\n${player.cards.length} card(s) left",
                                             textAlign: TextAlign.center,
                                           )
-                                    : !(player['id'] == mpdata['playerID'])
+                                    : !(player.id == mpdata['playerID'])
                                         ? Text(
-                                            "${player['username']}\n${player['cards'].length} card(s) left",
+                                            "${player.username!}\n${player.cards.length} card(s) left",
                                             textAlign: TextAlign.center)
                                         : Text(
-                                            "You (${player['username']})\n${player['cards'].length} card(s) left",
+                                            "You (${player.username!})\n${player.cards.length} card(s) left",
                                             textAlign: TextAlign.center,
                                           ),
                               ))

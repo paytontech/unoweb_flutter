@@ -1,23 +1,29 @@
 import 'dart:math';
 
+import 'package:json_annotation/json_annotation.dart';
+import 'package:unoweb/UselessGameUtils.dart';
 import 'package:unoweb/classes/Card.dart';
 
 import 'Player.dart';
 
 class Game {
   List<Player> players = [];
-  Player? currentPlayer;
+  Player currentPlayer = Player.empty();
   GameStack stack = GameStack();
   WinState winState = WinState();
   bool reversed = false;
   int playerCount = 0;
-  Game(List<Player> players, Player currentPlayer,
+  List<GameCard> possibleCards = [];
+  bool multiplayer = false;
+  setup(List<Player> players, Player currentPlayer,
       List<GameCard> possibleCards) {
     this.players = players;
+    this.possibleCards = possibleCards;
     this.currentPlayer = players[0];
     this.playerCount = players.length - 1;
     generateStack(possibleCards);
   }
+
   generateStack(List<GameCard> possibleCards) {
     GameCard stackCard = possibleCards[Random().nextInt(possibleCards.length)];
     if (stackCard.special) {
@@ -27,6 +33,33 @@ class Game {
     } else {
       this.stack.current = stackCard;
     }
+  }
+
+  reset() {
+    this.players = [];
+
+    this.winState = WinState();
+    this.playerCount = 1;
+    this.players.add(Player(0, []));
+    if (!multiplayer) {
+      addBots(3);
+    }
+    this.currentPlayer = players[0];
+  }
+
+  addBots(int botCount) {
+    for (int i = playerCount; i < botCount; i++) {
+      Player bot = Player.bot(i, []);
+      for (int z = 0; i < 7; i++) {
+        bot.addCard(UselessGameUtils.randomCard(possibleCards));
+      }
+      this.players.add(bot);
+    }
+  }
+
+  addPlayer(Player player) {
+    this.players.add(player);
+    this.playerCount = players.length - 1;
   }
 
   nextPlayer() {
@@ -48,7 +81,7 @@ class Game {
 }
 
 class GameStack {
-  GameCard? current;
+  GameCard current = GameCard.empty();
   List<GameCard> prev = [];
 }
 
