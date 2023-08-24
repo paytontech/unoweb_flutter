@@ -1,6 +1,6 @@
 {
-    "name": "unoweb",
-    "short_name": "unoweb",
+    "name": "unoweb_flutter",
+    "short_name": "unoweb_flutter",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
