@@ -1,4 +1,8 @@
+// ignore_for_file: unnecessary_this
+
 import 'dart:math';
+
+import 'package:unoweb_flutter/classes/UselessGameUtils.dart';
 
 import 'Game.dart';
 
@@ -23,8 +27,10 @@ class Player {
   }
   Player.empty() {}
 
-  drawCard(List<GameCard> possibleCards, Game gameData) {
-    this.cards.add(possibleCards[Random().nextInt(possibleCards.length)]);
+  botPlay(Game game) {}
+  drawCard(Game gameData) {
+    this.cards.add(UselessGameUtils.possibleCards()[
+        Random().nextInt(UselessGameUtils.possibleCards().length)]);
     gameData.nextPlayer();
   }
 

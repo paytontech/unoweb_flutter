@@ -52,8 +52,9 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+              Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  direction: Axis.horizontal,
                   children: game
                       .getPlayerWithUUID(myID)
                       .cards
@@ -76,7 +77,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 height: 20,
               ),
               const Text(
-                "Current Card",
+                "Stack Card",
                 style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
               ),
               const Text("This is the card at the top of the stack"),

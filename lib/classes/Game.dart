@@ -1,4 +1,8 @@
+// ignore_for_file: unnecessary_this
+
 import 'dart:math';
+
+import 'package:unoweb_flutter/classes/Bot.dart';
 
 import 'UselessGameUtils.dart';
 import 'GameCard.dart';
@@ -26,7 +30,8 @@ class Game {
   Game.singleplayer(Player player) {
     this.players.add(player);
     this.addBots(3);
-    this.playerCount = 4;
+    this.playerCount = players.length - 1;
+    this.currentPlayer = player;
     generateStack();
     this.started = true;
   }
@@ -43,12 +48,15 @@ class Game {
   }
 
   void playCard(GameCard card, Player player) {
-    if (currentPlayer == player && UselessGameUtils.canPlayCard(card, this)) {
+    print(indexOfPlayer(player));
+    if (currentPlayer.id.toLowerCase() == player.id.toLowerCase() &&
+        UselessGameUtils.canPlayCard(card, this)) {
       stack.prev.add(stack.current);
       stack.current = card;
       this.players[indexOfPlayer(player)].cards.remove(card);
+      print(indexOfPlayer(player));
       nextPlayer();
-    }
+    } else {}
   }
 
   Player getPlayerWithUUID(String uuid) {
@@ -73,7 +81,7 @@ class Game {
 
   addBots(int botCount) {
     for (int i = playerCount; i < botCount; i++) {
-      Player bot = Player.bot(UselessGameUtils.randomCards(7));
+      Bot bot = Bot.bot(UselessGameUtils.randomCards(7));
       this.players.add(bot);
     }
   }
@@ -84,11 +92,16 @@ class Game {
   }
 
   nextPlayer() {
-    int currentIndex = players.indexOf(currentPlayer!);
+    int currentIndex = players.indexOf(currentPlayer);
     if (!reversed) {
+      print("not reversed");
       if (currentIndex >= playerCount) {
+        print(
+            "currentIndex IS >= playerCount (${currentIndex}, ${playerCount})");
         currentPlayer = players[0];
       } else {
+        print(
+            "currentIndex IS NOT >= playerCount (${currentIndex}, ${playerCount})");
         currentPlayer = players[currentIndex + 1];
       }
     } else {
@@ -98,6 +111,9 @@ class Game {
         currentPlayer = players[playerCount];
       }
     }
+    print(
+        "botPlay for bot ${this.currentPlayer.id} (${this.indexOfPlayer(currentPlayer)})");
+    this.currentPlayer.botPlay(this);
   }
 }
 
