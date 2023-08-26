@@ -23,14 +23,6 @@ class _PlayersStatusUIState extends State<PlayersStatusUI> {
                                 child: Text(
                                             "${player.bot ? "Bot ${widget.game.indexOfPlayer(player)}" : "You"}\n${player.cards.length} card(s) left",
                                             textAlign: TextAlign.center, style: TextStyle(fontWeight: widget.game.currentPlayer == player ? FontWeight.bold : FontWeight.normal),)
-                                    // : !(player.id == mpdata['playerID'])
-                                    //     ? Text(
-                                    //         "${player.username!}\n${player.cards.length} card(s) left",
-                                    //         textAlign: TextAlign.center)
-                                    //     : Text(
-                                    //         "You (${player.username!})\n${player.cards.length} card(s) left",
-                                    //         textAlign: TextAlign.center,
-                                    //       ),
                               ))
                           .toList(),
                     );

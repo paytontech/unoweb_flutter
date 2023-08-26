@@ -30,8 +30,7 @@ class Player {
   botPlay(Game game) {}
   drawCard(Game gameData) {
     if (gameData.currentPlayer == this) {
-      this.cards.add(UselessGameUtils.possibleCards()[
-        Random().nextInt(UselessGameUtils.possibleCards().length)]);
+      this.cards.add(UselessGameUtils.randomCard());
     gameData.nextPlayer();
     }
   }

@@ -1,5 +1,7 @@
 // ignore_for_file: prefer_initializing_formals, unnecessary_this
 
+import 'package:unoweb_flutter/classes/Game.dart';
+
 class GameCard {
   CardColor color = CardColor.red;
   int? number;
@@ -46,6 +48,10 @@ class GameCard {
     }
   }
   GameCard.empty() {}
+
+  void onPlay(Game game) {
+    game.nextPlayer();
+  }
 }
 
 class WildColor {

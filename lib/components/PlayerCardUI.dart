@@ -46,13 +46,11 @@ class _PlayerCardState extends State<PlayerCard> {
             ? Text(
                 "${widget.card.humanReadableType}",
                 textAlign: TextAlign.center,
-                style: widget.canPlay
-                    ? TextStyle(
+                style: TextStyle(
                         color: UselessGameUtils.getCardColor(widget.card),
-                        fontSize: 30)
-                    : null,
+                        fontSize: widget.canPlay ? 30 : null),
               )
-            : Column(
+            : widget.card.chosenColor == null ? Column(
                 children: wildcolors
                     .map<Widget>((ccolor) => ElevatedButton(
                           onPressed: () {
@@ -65,7 +63,13 @@ class _PlayerCardState extends State<PlayerCard> {
                                   color: UselessGameUtils.getCardColor(
                                       GameCard.color(ccolor.color)))),
                         ))
-                    .toList()),
+                    .toList()) : Text(
+                "${widget.card.humanReadableType}",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                        color: UselessGameUtils.getCardColor(widget.card),
+                        fontSize: widget.canPlay ? 30 : null)
+              ),
       ),
     );
   }

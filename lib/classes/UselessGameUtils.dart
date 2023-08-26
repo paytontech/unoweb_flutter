@@ -1,6 +1,10 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:unoweb_flutter/classes/Special%20Cards/DrawTwo.dart';
+import 'package:unoweb_flutter/classes/Special%20Cards/ReverseCard.dart';
+import 'package:unoweb_flutter/classes/Special%20Cards/SkipCard.dart';
+import 'package:unoweb_flutter/classes/Special%20Cards/WirdCard.dart';
 import 'GameCard.dart';
 import 'Game.dart';
 
@@ -42,29 +46,29 @@ class UselessGameUtils {
     for (var i = 0; i < 10; i++) {
       cards.add(GameCard(CardColor.red, i));
     }
-    cards.add(GameCard.special(CardColor.red, CardType.plus2));
-    cards.add(GameCard.special(CardColor.red, CardType.reverse));
-    cards.add(GameCard.special(CardColor.red, CardType.skip));
+    cards.add(DrawTwoCard(CardColor.red));
+    cards.add(ReverseCard(CardColor.red));
+    cards.add(SkipCard(CardColor.red));
     for (var i = 0; i < 10; i++) {
       cards.add(GameCard(CardColor.blue, i));
     }
-    cards.add(GameCard.special(CardColor.blue, CardType.plus2));
-    cards.add(GameCard.special(CardColor.blue, CardType.reverse));
-    cards.add(GameCard.special(CardColor.blue, CardType.skip));
+    cards.add(DrawTwoCard(CardColor.blue));
+    cards.add(ReverseCard(CardColor.blue));
+    cards.add(SkipCard(CardColor.blue));
     for (var i = 0; i < 10; i++) {
       cards.add(GameCard(CardColor.yellow, i));
     }
-    cards.add(GameCard.special(CardColor.green, CardType.plus2));
-    cards.add(GameCard.special(CardColor.green, CardType.reverse));
-    cards.add(GameCard.special(CardColor.green, CardType.skip));
+    cards.add(DrawTwoCard(CardColor.green));
+    cards.add(ReverseCard(CardColor.green));
+    cards.add(SkipCard(CardColor.green));
     for (var i = 0; i < 10; i++) {
       cards.add(GameCard(CardColor.yellow, i));
     }
-    cards.add(GameCard.special(CardColor.yellow, CardType.plus2));
-    cards.add(GameCard.special(CardColor.yellow, CardType.reverse));
-    cards.add(GameCard.special(CardColor.yellow, CardType.skip));
-    cards.add(GameCard.wild(CardType.wnormal));
-    cards.add(GameCard.wild(CardType.wplus4));
+    cards.add(DrawTwoCard(CardColor.yellow));
+    cards.add(ReverseCard(CardColor.yellow));
+    cards.add(SkipCard(CardColor.yellow));
+    cards.add(WildCard(CardType.wnormal));
+    cards.add(WildCard(CardType.wplus4));
     return cards;
   }
 

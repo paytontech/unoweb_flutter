@@ -47,7 +47,7 @@ class Game {
       stack.current = card;
       this.players[indexOfPlayer(player)].cards.remove(card);
       print(indexOfPlayer(player));
-      nextPlayer();
+      card.onPlay(this);
     } else {}
   }
 
@@ -83,29 +83,50 @@ class Game {
     this.playerCount = players.length - 1;
   }
 
-  nextPlayer() {
+  nextPlayer([int offset = 0]) {
+    int currentIndex = players.indexOf(currentPlayer);
+    if (!reversed) {
+      print("not reversed");
+      if (currentIndex + offset >= playerCount) {
+        print(
+            "currentIndex IS >= playerCount (${currentIndex}, ${playerCount})");
+        currentPlayer = players[0 + offset];
+      } else {
+        print(
+            "currentIndex IS NOT >= playerCount (${currentIndex}, ${playerCount})");
+        currentPlayer = players[(currentIndex + 1) + offset];
+      }
+    } else {
+      if (currentIndex - offset > 0) {
+        currentPlayer = players[(currentIndex - 1) - offset];
+      } else {
+        currentPlayer = players[playerCount - offset];
+      }
+    }
+    print(
+        "botPlay for bot ${this.currentPlayer.id} (${this.indexOfPlayer(currentPlayer)})");
+    this.currentPlayer.botPlay(this);
+  }
+  Player getNextPlayer() {
     int currentIndex = players.indexOf(currentPlayer);
     if (!reversed) {
       print("not reversed");
       if (currentIndex >= playerCount) {
         print(
             "currentIndex IS >= playerCount (${currentIndex}, ${playerCount})");
-        currentPlayer = players[0];
+        return players[0];
       } else {
         print(
             "currentIndex IS NOT >= playerCount (${currentIndex}, ${playerCount})");
-        currentPlayer = players[currentIndex + 1];
+        return players[currentIndex + 1];
       }
     } else {
       if (currentIndex > 0) {
-        currentPlayer = players[currentIndex - 1];
+        return players[currentIndex - 1];
       } else {
-        currentPlayer = players[playerCount];
+        return players[playerCount];
       }
     }
-    print(
-        "botPlay for bot ${this.currentPlayer.id} (${this.indexOfPlayer(currentPlayer)})");
-    this.currentPlayer.botPlay(this);
   }
 }
 
