@@ -6,10 +6,11 @@ class StackCardUI extends StatefulWidget {
   const StackCardUI({
     super.key,
     required this.card,
+    required this.onPressed
   });
 
   final GameCard card;
-
+  final Function()? onPressed;
   @override
   State<StackCardUI> createState() => _StackCardUIState();
 }
@@ -20,7 +21,7 @@ class _StackCardUIState extends State<StackCardUI> {
     return Padding(
       padding: const EdgeInsets.all(2.0),
       child: ElevatedButton(
-          onPressed: () {},
+          onPressed: widget.onPressed,
           style: ElevatedButton.styleFrom(
             minimumSize: const Size(100, 120),
             backgroundColor: UselessGameUtils.getCardColor(widget.card),

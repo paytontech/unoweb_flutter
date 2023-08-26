@@ -39,6 +39,11 @@ class GameCard {
     this.type = card.type;
     this.special = card.special;
     this.chosenColor = card.chosenColor;
+    if (card.special) {
+      this.humanReadableType = this.type!.name;
+    } else {
+      this.humanReadableType = this.number.toString();
+    }
   }
   GameCard.empty() {}
 }

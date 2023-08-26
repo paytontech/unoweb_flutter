@@ -19,14 +19,6 @@ class Game {
   List<GameCard> possibleCards = [];
   bool multiplayer = false;
   bool started = false;
-  // setup(List<Player> players, Player currentPlayer,
-  //     List<GameCard> possibleCards) {
-  //   this.players = players;
-  //   this.possibleCards = possibleCards;
-  //   this.currentPlayer = players[0];
-  //   this.playerCount = players.length - 1;
-  //   generateStack(possibleCards);
-  // }
   Game.singleplayer(Player player) {
     this.players.add(player);
     this.addBots(3);

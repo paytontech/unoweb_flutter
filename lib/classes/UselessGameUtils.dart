@@ -8,7 +8,7 @@ class UselessGameUtils {
   static Color getCardColor(GameCard card) {
     switch (card.type != null && card.type == CardType.wnormal ||
             card.type == CardType.wplus4
-        ? card.chosenColor!
+        ? card.chosenColor
         : card.color) {
       case CardColor.red:
         return (Colors.red);

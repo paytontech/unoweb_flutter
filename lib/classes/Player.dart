@@ -29,9 +29,11 @@ class Player {
 
   botPlay(Game game) {}
   drawCard(Game gameData) {
-    this.cards.add(UselessGameUtils.possibleCards()[
+    if (gameData.currentPlayer == this) {
+      this.cards.add(UselessGameUtils.possibleCards()[
         Random().nextInt(UselessGameUtils.possibleCards().length)]);
     gameData.nextPlayer();
+    }
   }
 
   addCard(GameCard card) {

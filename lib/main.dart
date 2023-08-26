@@ -3,7 +3,9 @@ import 'package:unoweb_flutter/classes/Game.dart';
 import 'package:unoweb_flutter/classes/Player.dart';
 import 'package:unoweb_flutter/classes/UselessGameUtils.dart';
 import 'package:unoweb_flutter/components/PlayerCardUI.dart';
+import 'package:unoweb_flutter/components/PlayersStatus.dart';
 import 'package:unoweb_flutter/components/StackCardUI.dart';
+import 'dart:async';
 
 void main() {
   runApp(const MyApp());
@@ -35,10 +37,20 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   String myID = "";
   Game game = Game.singleplayer(Player(UselessGameUtils.randomCards(7)));
+  Timer timer = Timer(Duration.zero, () { });
   @override
   void initState() {
     super.initState();
     myID = game.players[0].id;
+    timer = Timer.periodic(Duration(seconds: 1), (timer) {update();});
+  }
+
+  
+
+  void update() {
+    setState(() {
+      
+    });
   }
 
   @override
@@ -46,7 +58,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
         appBar: AppBar(
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          title: Text(widget.title),
+          title: Text(widget.title, style: TextStyle(color: Colors.white),),
         ),
         body: Center(
           child: Column(
@@ -61,7 +73,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       .map<Widget>((card) => PlayerCard(
                           card: card,
                           playerID: myID,
-                          canPlay: UselessGameUtils.canPlayCard(card, game),
+                          canPlay: UselessGameUtils.canPlayCard(card, game) && game.currentPlayer == game.getPlayerWithUUID(myID),
                           playCard: () {
                             /* user selected card */
                             setState(() {
@@ -89,7 +101,12 @@ class _MyHomePageState extends State<MyHomePage> {
                 width: 0,
                 height: 20,
               ),
-              StackCardUI(card: game.stack.current)
+              StackCardUI(card: game.stack.current, onPressed: () {
+                setState(() {
+                  game.getPlayerWithUUID(myID).drawCard(game);
+                });
+              },),
+              PlayersStatusUI(game: game)
             ],
           ),
         ));
