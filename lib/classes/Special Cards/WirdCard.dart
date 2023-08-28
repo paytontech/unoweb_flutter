@@ -25,5 +25,4 @@ class WildCard extends GameCard {
     }
     game.nextPlayer();
   }
-  
 }

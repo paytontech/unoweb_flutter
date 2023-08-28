@@ -13,13 +13,11 @@ class DrawTwoCard extends GameCard {
 
   @override
   void onPlay(Game game) {
-      for (var i = 0; i < 2; i++) {
-        print("card $i");
-        print(game.indexOfPlayer(game.getNextPlayer()));
-        game.getNextPlayer().drawCard(game);
-        
-      }
-      game.nextPlayer(1);
+    for (var i = 0; i < 2; i++) {
+      print("card $i");
+      print(game.indexOfPlayer(game.getNextPlayer()));
+      game.getNextPlayer().drawCard(game);
+    }
+    game.nextPlayer(1);
   }
-  
 }

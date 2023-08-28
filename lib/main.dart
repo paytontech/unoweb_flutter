@@ -8,6 +8,9 @@ import 'package:unoweb_flutter/components/PlayersStatus.dart';
 import 'package:unoweb_flutter/components/StackCardUI.dart';
 import 'dart:async';
 
+import 'package:unoweb_flutter/pages/GameOver.dart';
+import 'package:unoweb_flutter/pages/GameView.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -36,98 +39,30 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String myID = "";
   Game game = Game.singleplayer(Player(UselessGameUtils.randomCards(7)));
-  Timer timer = Timer(Duration.zero, () { });
+  Timer timer = Timer(Duration.zero, () {});
   @override
   void initState() {
     super.initState();
-    myID = game.players[0].id;
-    timer = Timer.periodic(Duration(seconds: 1), (timer) {update();});
+    timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      update();
+    });
   }
 
-  
-
   void update() {
-    setState(() {
-      
-    });
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          title: Text(widget.title, style: TextStyle(color: Colors.white,), textAlign: TextAlign.left,),
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              if (game.reversed)
-                      const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.repeat,
-                            color: Colors.grey,
-                          ),
-                          Text(
-                            "Reversed",
-                            style: TextStyle(color: Colors.grey),
-                          )
-                        ],
-                      ),
-              Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  direction: Axis.horizontal,
-                  children: game
-                      .getPlayerWithUUID(myID)
-                      .cards
-                      .map<Widget>((card) => PlayerCard(
-                          card: card,
-                          playerID: myID,
-                          canPlay: UselessGameUtils.canPlayCard(card, game) && game.currentPlayer == game.getPlayerWithUUID(myID),
-                          playCard: () {
-                            /* user selected card */
-                            setState(() {
-                              game.playCard(card, game.getPlayerWithUUID(myID));
-                            });
-                          },
-                          wildColorChosen: (color) {
-                            /* user selected color for wild card */
-                                setState(() {
-                                  card.chosenColor = color.color;
-
-                                });
-                          }))
-                      .toList()),
-              const SizedBox(
-                width: 0,
-                height: 20,
-              ),
-              const Text(
-                "Stack Card",
-                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-              ),
-              const Text("This is the card at the top of the stack"),
-              const Text(
-                "You can press the card to draw a new one",
-                style: TextStyle(color: Colors.grey),
-              ),
-              const SizedBox(
-                width: 0,
-                height: 20,
-              ),
-              StackCardUI(card: game.stack.current, onPressed: () {
-                setState(() {
-                  game.getPlayerWithUUID(myID).drawCard(game);
-                });
-              },),
-              PlayersStatusUI(game: game)
-            ],
-          ),
-        ));
+    if (game.winState.winnerChosen) {
+      return GameOver();
+    } else if (!game.checkWinState()) {
+      return GameView(
+        game: game,
+      );
+    } else {
+      return Scaffold();
+    }
   }
 }

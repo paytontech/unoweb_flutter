@@ -15,6 +15,6 @@ class ReverseCard extends GameCard {
   @override
   void onPlay(Game game) {
     game.reversed = !game.reversed;
+    game.nextPlayer();
   }
-  
 }

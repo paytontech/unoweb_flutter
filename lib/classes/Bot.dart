@@ -24,12 +24,14 @@ class Bot extends Player {
         await Future.delayed(const Duration(seconds: 3));
         print('bot has no cards');
         drawCard(game);
+        game.nextPlayer();
       } else {
         //cards available
         print("bot has available cards");
         GameCard chosenCard =
             possibleCards[Random().nextInt(possibleCards.length)];
         print("selected card: ${chosenCard.humanReadableType}");
+        //TODO this is probably why bots can't play cards. we need to find the original type of the card and use THAT instead of GameCard
         GameCard checkedCard = GameCard.from(chosenCard);
         cards.remove(chosenCard);
         cards.add(checkedCard);

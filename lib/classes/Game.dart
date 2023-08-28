@@ -28,6 +28,18 @@ class Game {
     this.started = true;
   }
 
+  bool checkWinState() {
+    for (var player in players) {
+      if (player.cards.isEmpty) {
+        winState.winner = player;
+        winState.winnerChosen = true;
+        print("winner at index ${indexOfPlayer(player)}");
+        return true;
+      }
+    }
+    return false;
+  }
+
   generateStack() {
     GameCard stackCard = UselessGameUtils.possibleCards()[
         Random().nextInt(UselessGameUtils.possibleCards().length)];
@@ -97,7 +109,7 @@ class Game {
         currentPlayer = players[(currentIndex + 1) + offset];
       }
     } else {
-      if (currentIndex - offset > 0) {
+      if ((currentIndex - 1) - offset >= 0) {
         currentPlayer = players[(currentIndex - 1) - offset];
       } else {
         currentPlayer = players[playerCount - offset];
@@ -107,6 +119,7 @@ class Game {
         "botPlay for bot ${this.currentPlayer.id} (${this.indexOfPlayer(currentPlayer)})");
     this.currentPlayer.botPlay(this);
   }
+
   Player getNextPlayer() {
     int currentIndex = players.indexOf(currentPlayer);
     if (!reversed) {
