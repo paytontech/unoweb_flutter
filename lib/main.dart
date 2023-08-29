@@ -56,7 +56,10 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     if (game.winState.winnerChosen) {
-      return GameOver();
+      return GameOver(
+        game: game,
+        myID: game.players[0].id,
+      );
     } else if (!game.checkWinState()) {
       return GameView(
         game: game,

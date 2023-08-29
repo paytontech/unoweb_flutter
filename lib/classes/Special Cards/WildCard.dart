@@ -12,6 +12,12 @@ class WildCard extends GameCard {
     this.humanReadableType = this.type!.name;
   }
 
+  WildCard duplicate() {
+    WildCard card = WildCard(this.type!);
+    card.chosenColor = this.chosenColor;
+    return card;
+  }
+
   @override
   void onPlay(Game game) {
     if (this.type! == CardType.wplus4) {

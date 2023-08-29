@@ -11,9 +11,12 @@ class SkipCard extends GameCard {
     this.humanReadableType = this.type!.name;
   }
 
+  SkipCard duplicate() {
+    return SkipCard(this.color);
+  }
+
   @override
   void onPlay(Game game) {
     game.nextPlayer(1);
   }
-  
 }

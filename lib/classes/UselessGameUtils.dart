@@ -1,10 +1,10 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:unoweb_flutter/classes/Special%20Cards/DrawTwo.dart';
-import 'package:unoweb_flutter/classes/Special%20Cards/ReverseCard.dart';
-import 'package:unoweb_flutter/classes/Special%20Cards/SkipCard.dart';
-import 'package:unoweb_flutter/classes/Special%20Cards/WirdCard.dart';
+import 'package:unoweb_flutter/classes/Special Cards/DrawTwo.dart';
+import 'package:unoweb_flutter/classes/Special Cards/ReverseCard.dart';
+import 'package:unoweb_flutter/classes/Special Cards/SkipCard.dart';
+import 'package:unoweb_flutter/classes/Special Cards/WildCard.dart';
 import 'GameCard.dart';
 import 'Game.dart';
 

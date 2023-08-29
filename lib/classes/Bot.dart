@@ -13,7 +13,7 @@ class Bot extends Player {
     print("bot attempting play..");
     if (game.currentPlayer == this) {
       print("bot can play");
-      List<GameCard> possibleCards = [];
+      List possibleCards = [];
       for (var card in cards) {
         if (UselessGameUtils.canPlayCard(card, game)) {
           possibleCards.add(card);
@@ -28,11 +28,10 @@ class Bot extends Player {
       } else {
         //cards available
         print("bot has available cards");
-        GameCard chosenCard =
-            possibleCards[Random().nextInt(possibleCards.length)];
+        var chosenCard = possibleCards[Random().nextInt(possibleCards.length)];
         print("selected card: ${chosenCard.humanReadableType}");
         //TODO this is probably why bots can't play cards. we need to find the original type of the card and use THAT instead of GameCard
-        GameCard checkedCard = GameCard.from(chosenCard);
+        var checkedCard = chosenCard.duplicate();
         cards.remove(chosenCard);
         cards.add(checkedCard);
         if (chosenCard.isWild) {

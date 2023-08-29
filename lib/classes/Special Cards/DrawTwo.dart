@@ -11,6 +11,10 @@ class DrawTwoCard extends GameCard {
     this.humanReadableType = this.type!.name;
   }
 
+  DrawTwoCard duplicate() {
+    return DrawTwoCard(this.color);
+  }
+
   @override
   void onPlay(Game game) {
     for (var i = 0; i < 2; i++) {

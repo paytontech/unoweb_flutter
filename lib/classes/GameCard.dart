@@ -25,6 +25,10 @@ class GameCard {
     this.humanReadableType = this.type!.name;
   }
 
+  GameCard duplicate() {
+    return GameCard(this.color, this.number!);
+  }
+
   GameCard.wild(CardType type) {
     this.type = type;
     this.special = true;

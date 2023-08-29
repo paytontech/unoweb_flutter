@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:unoweb_flutter/components/WildSelectSheet.dart';
 import '../classes/GameCard.dart';
 import '../classes/UselessGameUtils.dart';
 
@@ -23,54 +24,52 @@ class PlayerCard extends StatefulWidget {
 
 class _PlayerCardState extends State<PlayerCard> {
   // var wildcolors = ["Red", "Blue", "Green", "Yellow"];
-  var wildcolors = [
-    WildColor("Red", CardColor.red),
-    WildColor("Blue", CardColor.blue),
-    WildColor("Green", CardColor.green),
-    WildColor("Yellow", CardColor.yellow)
-  ];
+
+  void presentWildPicker() {
+    showModalBottomSheet(
+      isDismissible: true,
+      isScrollControlled: true,
+      context: context,
+      builder: (context) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.3,
+          width: MediaQuery.of(context).size.height * 0.7,
+          child: WildSelectSheet(
+            wildColorChosen: widget.wildColorChosen,
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(2.0),
+      padding: const EdgeInsets.all(4.0),
       child: ElevatedButton(
-        onPressed: widget.canPlay ? widget.playCard : null,
-        style: ElevatedButton.styleFrom(
-          minimumSize: const Size(100, 120),
-          shadowColor: widget.canPlay
-              ? UselessGameUtils.getCardColor(widget.card)
+          onPressed: widget.canPlay
+              ? !widget.card.isWild
+                  ? widget.playCard
+                  : widget.card.chosenColor == null
+                      ? presentWildPicker
+                      : widget.playCard
               : null,
-          elevation: widget.canPlay ? 22.0 : null,
-        ),
-        child: !widget.card.isWild
-            ? Text(
-                "${widget.card.humanReadableType}",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                        color: UselessGameUtils.getCardColor(widget.card),
-                        fontSize: widget.canPlay ? 30 : null),
-              )
-            : widget.card.chosenColor == null ? Column(
-                children: wildcolors
-                    .map<Widget>((ccolor) => ElevatedButton(
-                          onPressed: () {
-                            widget.wildColorChosen!(ccolor);
-                          },
-                          style: ElevatedButton.styleFrom(
-                              minimumSize: const Size(80, 20)),
-                          child: Text(ccolor.name,
-                              style: TextStyle(
-                                  color: UselessGameUtils.getCardColor(
-                                      GameCard.color(ccolor.color)))),
-                        ))
-                    .toList()) : Text(
-                "${widget.card.humanReadableType}",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                        color: UselessGameUtils.getCardColor(widget.card),
-                        fontSize: widget.canPlay ? 30 : null)
-              ),
-      ),
+          style: ElevatedButton.styleFrom(
+              minimumSize: const Size(100, 120),
+              shadowColor: widget.canPlay
+                  ? UselessGameUtils.getCardColor(widget.card)
+                  : null,
+              elevation: widget.canPlay ? 22.0 : null,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(
+                      Radius.circular(widget.canPlay ? 15 : 5)))),
+          child: Text(
+            "${widget.card.humanReadableType}",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                color: UselessGameUtils.getCardColor(widget.card),
+                fontSize: widget.canPlay ? 30 : null),
+          )),
     );
   }
 }

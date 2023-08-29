@@ -36,79 +36,86 @@ class _GameViewState extends State<GameView> {
             textAlign: TextAlign.left,
           ),
         ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              if (widget.game.reversed)
-                const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.repeat,
-                      color: Colors.grey,
-                    ),
-                    Text(
-                      "Reversed",
-                      style: TextStyle(color: Colors.grey),
-                    )
-                  ],
+        body: SingleChildScrollView(
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                if (widget.game.reversed)
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.repeat,
+                        color: Colors.grey,
+                      ),
+                      Text(
+                        "Reversed",
+                        style: TextStyle(color: Colors.grey),
+                      )
+                    ],
+                  ),
+                const Text(
+                  "Your cards",
+                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
                 ),
-              Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  direction: Axis.horizontal,
-                  children: widget.game
-                      .getPlayerWithUUID(myID)
-                      .cards
-                      .map<Widget>((card) => PlayerCard(
-                          card: card,
-                          playerID: myID,
-                          canPlay:
-                              UselessGameUtils.canPlayCard(card, widget.game) &&
-                                  widget.game.currentPlayer ==
-                                      widget.game.getPlayerWithUUID(myID),
-                          playCard: () {
-                            /* user selected card */
-                            setState(() {
-                              widget.game.playCard(
-                                  card, widget.game.getPlayerWithUUID(myID));
-                            });
-                          },
-                          wildColorChosen: (color) {
-                            /* user selected color for wild card */
-                            setState(() {
-                              card.chosenColor = color.color;
-                            });
-                          }))
-                      .toList()),
-              const SizedBox(
-                width: 0,
-                height: 20,
-              ),
-              const Text(
-                "Stack Card",
-                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-              ),
-              const Text("This is the card at the top of the stack"),
-              const Text(
-                "You can press the card to draw a new one",
-                style: TextStyle(color: Colors.grey),
-              ),
-              const SizedBox(
-                width: 0,
-                height: 20,
-              ),
-              StackCardUI(
-                card: widget.game.stack.current,
-                onPressed: () {
-                  setState(() {
-                    widget.game.getPlayerWithUUID(myID).drawCard(widget.game);
-                    widget.game.nextPlayer();
-                  });
-                },
-              ),
-              PlayersStatusUI(game: widget.game)
-            ],
+                const Text("Click on a card to play it"),
+                Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    direction: Axis.horizontal,
+                    children: widget.game
+                        .getPlayerWithUUID(myID)
+                        .cards
+                        .map<Widget>((card) => PlayerCard(
+                            card: card,
+                            playerID: myID,
+                            canPlay: UselessGameUtils.canPlayCard(
+                                    card, widget.game) &&
+                                widget.game.currentPlayer ==
+                                    widget.game.getPlayerWithUUID(myID),
+                            playCard: () {
+                              /* user selected card */
+                              setState(() {
+                                widget.game.playCard(
+                                    card, widget.game.getPlayerWithUUID(myID));
+                              });
+                            },
+                            wildColorChosen: (color) {
+                              /* user selected color for wild card */
+                              setState(() {
+                                card.chosenColor = color.color;
+                              });
+                            }))
+                        .toList()),
+                const SizedBox(
+                  width: 0,
+                  height: 20,
+                ),
+                const Text(
+                  "Stack Card",
+                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                ),
+                const Text("This is the card at the top of the stack"),
+                const Text(
+                  "You can press the card to draw a new one",
+                  style: TextStyle(color: Colors.grey),
+                ),
+                const SizedBox(
+                  width: 0,
+                  height: 20,
+                ),
+                StackCardUI(
+                  card: widget.game.stack.current,
+                  onPressed: () {
+                    setState(() {
+                      widget.game.getPlayerWithUUID(myID).drawCard(widget.game);
+                      widget.game.nextPlayer();
+                    });
+                  },
+                ),
+                PlayersStatusUI(game: widget.game)
+              ],
+            ),
           ),
         ));
   }

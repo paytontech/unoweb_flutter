@@ -12,6 +12,11 @@ class ReverseCard extends GameCard {
     this.humanReadableType = this.type!.name;
   }
 
+  ReverseCard duplicate() {
+    ReverseCard card = ReverseCard(this.color);
+    return card;
+  }
+
   @override
   void onPlay(Game game) {
     game.reversed = !game.reversed;
