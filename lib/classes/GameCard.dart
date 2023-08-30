@@ -1,6 +1,8 @@
 // ignore_for_file: prefer_initializing_formals, unnecessary_this
 
+import 'package:flutter/material.dart';
 import 'package:unoweb_flutter/classes/Game.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 class GameCard {
   CardColor color = CardColor.red;
@@ -77,6 +79,17 @@ extension ColorName on CardColor {
         return "Yellow";
       case CardColor.green:
         return "Green";
+    }
+  }
+
+  Future<Image> get symbol async {
+    switch (this) {
+      case CardColor.red:
+        return Image.asset(
+            await rootBundle.loadString("lib/assets/images/triangle.png"));
+      default:
+        return Image.asset(
+            await rootBundle.loadString("lib/assets/images/triangle.png"));
     }
   }
 }

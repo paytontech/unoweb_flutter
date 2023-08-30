@@ -60,7 +60,6 @@ class Bot extends Player {
             if (blue == highest) checkedCard.chosenColor = CardColor.blue;
             if (yellow == highest) checkedCard.chosenColor = CardColor.yellow;
             if (green == highest) checkedCard.chosenColor = CardColor.green;
-            print("highest: ${checkedCard.chosenColor!.name}");
           }
         }
         await Future.delayed(const Duration(seconds: 3));

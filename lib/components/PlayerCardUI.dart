@@ -3,6 +3,8 @@ import 'package:unoweb_flutter/components/WildSelectSheet.dart';
 import '../classes/GameCard.dart';
 import '../classes/UselessGameUtils.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 class PlayerCard extends StatefulWidget {
   const PlayerCard(
       {super.key,
@@ -10,10 +12,12 @@ class PlayerCard extends StatefulWidget {
       required this.playerID,
       required this.canPlay,
       required this.playCard,
-      required this.wildColorChosen});
+      required this.wildColorChosen,
+      required this.isTurn});
 
   final GameCard card;
   final String playerID;
+  final bool isTurn;
   final bool canPlay;
   final Function()? playCard;
   final Function(WildColor)? wildColorChosen;
@@ -45,31 +49,38 @@ class _PlayerCardState extends State<PlayerCard> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(4.0),
-      child: ElevatedButton(
-          onPressed: widget.canPlay
-              ? !widget.card.isWild
-                  ? widget.playCard
-                  : widget.card.chosenColor == null
-                      ? presentWildPicker
-                      : widget.playCard
-              : null,
-          style: ElevatedButton.styleFrom(
-              minimumSize: const Size(100, 120),
-              shadowColor: widget.canPlay
-                  ? UselessGameUtils.getCardColor(widget.card)
+        padding: const EdgeInsets.all(4.0),
+        child: Opacity(
+          opacity: widget.canPlay ? 1 : 0.5,
+          child: ElevatedButton(
+              onPressed: widget.isTurn
+                  ? widget.canPlay
+                      ? !widget.card.isWild
+                          ? widget.playCard
+                          : widget.card.chosenColor == null
+                              ? presentWildPicker
+                              : widget.playCard
+                      : () {}
                   : null,
-              elevation: widget.canPlay ? 22.0 : null,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(
-                      Radius.circular(widget.canPlay ? 15 : 5)))),
-          child: Text(
-            "${widget.card.humanReadableType}",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-                color: UselessGameUtils.getCardColor(widget.card),
-                fontSize: widget.canPlay ? 30 : null),
-          )),
-    );
+              style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(100, 120),
+                  shadowColor: widget.canPlay
+                      ? UselessGameUtils.getCardColor(widget.card)
+                      : null,
+                  backgroundColor: UselessGameUtils.getCardColor(widget.card),
+                  elevation: widget.canPlay ? 22.0 : null,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(
+                          Radius.circular(widget.canPlay ? 15 : 5)))),
+              child: Text(
+                "${widget.card.humanReadableType}",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    fontSize: 30,
+                    color: widget.isTurn
+                        ? Colors.white
+                        : UselessGameUtils.getCardColor(widget.card)),
+              )),
+        ));
   }
 }

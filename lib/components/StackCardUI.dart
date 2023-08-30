@@ -3,11 +3,7 @@ import '../classes/GameCard.dart';
 import '../classes/UselessGameUtils.dart';
 
 class StackCardUI extends StatefulWidget {
-  const StackCardUI({
-    super.key,
-    required this.card,
-    required this.onPressed
-  });
+  const StackCardUI({super.key, required this.card, required this.onPressed});
 
   final GameCard card;
   final Function()? onPressed;
@@ -23,9 +19,10 @@ class _StackCardUIState extends State<StackCardUI> {
       child: ElevatedButton(
           onPressed: widget.onPressed,
           style: ElevatedButton.styleFrom(
-            minimumSize: const Size(100, 120),
-            backgroundColor: UselessGameUtils.getCardColor(widget.card),
-          ),
+              minimumSize: const Size(100, 120),
+              backgroundColor: UselessGameUtils.getCardColor(widget.card),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(15)))),
           child: Text("${widget.card.humanReadableType}",
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 30, color: Colors.white))),

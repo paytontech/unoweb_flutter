@@ -8,6 +8,9 @@ import 'package:unoweb_flutter/components/PlayersStatus.dart';
 import 'package:unoweb_flutter/components/StackCardUI.dart';
 import 'dart:async';
 
+import 'package:unoweb_flutter/pages/SettingsPage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 class GameView extends StatefulWidget {
   const GameView({super.key, required this.game});
   final Game game;
@@ -35,6 +38,23 @@ class _GameViewState extends State<GameView> {
             ),
             textAlign: TextAlign.left,
           ),
+          leading: IconButton(
+              onPressed: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => SettingsPage()));
+              },
+              icon: Icon(
+                Icons.settings,
+                color: Colors.white,
+              )),
+          actions: [
+            IconButton(
+                onPressed: () {},
+                icon: Icon(
+                  Icons.group,
+                  color: Colors.white,
+                ))
+          ],
         ),
         body: SingleChildScrollView(
           child: Center(
@@ -73,6 +93,7 @@ class _GameViewState extends State<GameView> {
                                     card, widget.game) &&
                                 widget.game.currentPlayer ==
                                     widget.game.getPlayerWithUUID(myID),
+                            isTurn: widget.game.currentPlayer.id == myID,
                             playCard: () {
                               /* user selected card */
                               setState(() {

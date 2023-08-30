@@ -16,6 +16,30 @@ class _WildSelectSheetState extends State<WildSelectSheet> {
     WildColor("Green", CardColor.green),
     WildColor("Yellow", CardColor.yellow)
   ];
+  Widget selectionButton(WildColor color) {
+    return Container(
+      width: MediaQuery.of(context).size.width / 4,
+      child: Padding(
+        padding: EdgeInsets.all(5),
+        child: ElevatedButton(
+          onPressed: () {
+            widget.wildColorChosen!(color);
+            Navigator.pop(context);
+          },
+          child: Text(
+            color.name,
+            style: TextStyle(color: Colors.white),
+          ),
+          style: ElevatedButton.styleFrom(
+              backgroundColor:
+                  UselessGameUtils.getCardColor(GameCard.color(color.color)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(5)))),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -29,30 +53,18 @@ class _WildSelectSheetState extends State<WildSelectSheet> {
               "Choose a color",
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30),
             ),
-            Wrap(
-              children: wildcolors
-                  .map((color) => Padding(
-                        padding: EdgeInsets.all(5),
-                        child: ElevatedButton(
-                          onPressed: () {
-                            widget.wildColorChosen!(color);
-                            Navigator.pop(context);
-                          },
-                          child: Text(
-                            color.name,
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: UselessGameUtils.getCardColor(
-                                  GameCard.color(color.color)),
-                              minimumSize: Size(
-                                  MediaQuery.of(context).size.width / 4, 100),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(5)))),
-                        ),
-                      ))
-                  .toList(),
+            Container(
+              width: MediaQuery.of(context).size.width,
+              height: 200,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  selectionButton(wildcolors[0]),
+                  selectionButton(wildcolors[1]),
+                  selectionButton(wildcolors[2]),
+                  selectionButton(wildcolors[3]),
+                ],
+              ),
             )
           ],
         ),
