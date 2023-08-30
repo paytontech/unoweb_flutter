@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:unoweb_flutter/components/WildSelectSheet.dart';
 import '../classes/GameCard.dart';
@@ -46,6 +48,36 @@ class _PlayerCardState extends State<PlayerCard> {
     );
   }
 
+  Future<bool> getColorblindMode() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    return prefs.getBool("colorblindmode") ?? false;
+  }
+
+  bool isColorblind = false;
+
+  Image? cardSymbol;
+
+  @override
+  void initState() {
+    super.initState();
+    getColorblindMode().then((value) {
+      print("got colorblind");
+      setState(() {
+        isColorblind = value;
+      });
+      if (isColorblind) {
+        print("colorblind enabled. geting img");
+        widget.card.color.symbol.then((value) {
+          print("got image: ${value.image}");
+          setState(() {
+            cardSymbol = value;
+          });
+        });
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -72,14 +104,24 @@ class _PlayerCardState extends State<PlayerCard> {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.all(
                           Radius.circular(widget.canPlay ? 15 : 5)))),
-              child: Text(
-                "${widget.card.humanReadableType}",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontSize: 30,
-                    color: widget.isTurn
-                        ? Colors.white
-                        : UselessGameUtils.getCardColor(widget.card)),
+              child: Column(
+                children: [
+                  Text(
+                    "${widget.card.humanReadableType}",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 30,
+                        color: widget.isTurn
+                            ? Colors.white
+                            : UselessGameUtils.getCardColor(widget.card)),
+                  ),
+                  if (isColorblind && cardSymbol != null)
+                    Image(
+                      image: cardSymbol!.image,
+                      width: 25,
+                      height: 25,
+                    )
+                ],
               )),
         ));
   }

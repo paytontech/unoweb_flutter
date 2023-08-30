@@ -85,11 +85,13 @@ extension ColorName on CardColor {
   Future<Image> get symbol async {
     switch (this) {
       case CardColor.red:
-        return Image.asset(
-            await rootBundle.loadString("lib/assets/images/triangle.png"));
-      default:
-        return Image.asset(
-            await rootBundle.loadString("lib/assets/images/triangle.png"));
+        return Image.asset("assets/images/triangle.png");
+      case CardColor.blue:
+        return Image.asset("assets/images/square.png");
+      case CardColor.green:
+        return Image.asset("assets/images/circle.png");
+      case CardColor.yellow:
+        return Image.asset("assets/images/x.png");
     }
   }
 }

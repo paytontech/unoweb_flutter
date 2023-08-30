@@ -9,7 +9,6 @@ import 'package:unoweb_flutter/components/StackCardUI.dart';
 import 'dart:async';
 
 import 'package:unoweb_flutter/pages/SettingsPage.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class GameView extends StatefulWidget {
   const GameView({super.key, required this.game});
