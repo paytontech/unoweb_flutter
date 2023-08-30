@@ -58,18 +58,13 @@ class _PlayerCardState extends State<PlayerCard> {
 
   Image? cardSymbol;
 
-  @override
-  void initState() {
-    super.initState();
+  void refreshColorblindSettings() {
     getColorblindMode().then((value) {
-      print("got colorblind");
       setState(() {
         isColorblind = value;
       });
       if (isColorblind) {
-        print("colorblind enabled. geting img");
         widget.card.color.symbol.then((value) {
-          print("got image: ${value.image}");
           setState(() {
             cardSymbol = value;
           });
@@ -79,7 +74,13 @@ class _PlayerCardState extends State<PlayerCard> {
   }
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    refreshColorblindSettings();
     return Padding(
         padding: const EdgeInsets.all(4.0),
         child: Opacity(

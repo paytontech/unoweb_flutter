@@ -16,6 +16,7 @@ class _WildSelectSheetState extends State<WildSelectSheet> {
     WildColor("Green", CardColor.green),
     WildColor("Yellow", CardColor.yellow)
   ];
+  final ScrollController controller = ScrollController();
   Widget selectionButton(WildColor color) {
     return Container(
       width: MediaQuery.of(context).size.width / 4,
@@ -55,16 +56,19 @@ class _WildSelectSheetState extends State<WildSelectSheet> {
             ),
             Container(
               width: MediaQuery.of(context).size.width,
-              height: 200,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  selectionButton(wildcolors[0]),
-                  selectionButton(wildcolors[1]),
-                  selectionButton(wildcolors[2]),
-                  selectionButton(wildcolors[3]),
-                ],
-              ),
+              height: 150,
+              child: Scrollbar(
+                  controller: controller,
+                  child: ListView(
+                    controller: controller,
+                    scrollDirection: Axis.horizontal,
+                    children: [
+                      selectionButton(wildcolors[0]),
+                      selectionButton(wildcolors[1]),
+                      selectionButton(wildcolors[2]),
+                      selectionButton(wildcolors[3]),
+                    ],
+                  )),
             )
           ],
         ),

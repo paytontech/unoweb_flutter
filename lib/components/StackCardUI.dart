@@ -23,18 +23,13 @@ class _StackCardUIState extends State<StackCardUI> {
 
   Image? cardSymbol;
 
-  @override
-  void initState() {
-    super.initState();
+  void refreshColorblindSettings() {
     getColorblindMode().then((value) {
-      print("got colorblind");
       setState(() {
         isColorblind = value;
       });
       if (isColorblind) {
-        print("colorblind enabled. geting img");
         widget.card.color.symbol.then((value) {
-          print("got image: ${value.image}");
           setState(() {
             cardSymbol = value;
           });
@@ -44,7 +39,13 @@ class _StackCardUIState extends State<StackCardUI> {
   }
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    refreshColorblindSettings();
     return Padding(
         padding: const EdgeInsets.all(2.0),
         child: ElevatedButton(

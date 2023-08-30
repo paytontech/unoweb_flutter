@@ -40,7 +40,10 @@ class _GameViewState extends State<GameView> {
           leading: IconButton(
               onPressed: () {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => SettingsPage()));
+                        MaterialPageRoute(builder: (context) => SettingsPage()))
+                    .then((value) {
+                  setState(() {});
+                });
               },
               icon: Icon(
                 Icons.settings,
