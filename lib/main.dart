@@ -8,6 +8,7 @@ import 'package:unoweb_flutter/components/PlayerCardUI.dart';
 import 'package:unoweb_flutter/components/PlayersStatus.dart';
 import 'package:unoweb_flutter/components/StackCardUI.dart';
 import 'dart:async';
+import 'classes/MultiplayerController.dart';
 
 import 'package:unoweb_flutter/pages/GameOver.dart';
 import 'package:unoweb_flutter/pages/GameView.dart';
@@ -45,6 +46,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   Game game = Game.singleplayer(Player(UselessGameUtils.randomCards(7)));
+
   Timer timer = Timer(Duration.zero, () {});
   @override
   void initState() {
@@ -54,6 +56,8 @@ class _MyHomePageState extends State<MyHomePage> {
         update();
       });
       setUsername();
+      MultiplayerController controller =
+          MultiplayerController('http://localhost:9123', game);
     });
   }
 
