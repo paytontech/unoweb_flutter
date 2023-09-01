@@ -57,9 +57,18 @@ class _StackCardUIState extends State<StackCardUI> {
                   borderRadius: BorderRadius.all(Radius.circular(15)))),
           child: Column(
             children: [
-              Text("${widget.card.humanReadableType}",
+              if ((!widget.card.special))
+                Text(
+                  "${widget.card.humanReadableType}",
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 30, color: Colors.white)),
+                  style: TextStyle(fontSize: 30, color: Colors.white),
+                ),
+              if (widget.card.special)
+                Icon(
+                  widget.card.type!.icon,
+                  color: Colors.white,
+                  size: 30,
+                ),
               if (isColorblind && cardSymbol != null)
                 Image(
                   image: cardSymbol!.image,

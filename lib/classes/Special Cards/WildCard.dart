@@ -27,8 +27,6 @@ class WildCard extends GameCard {
       }
       game.nextPlayer(1);
       return;
-    } else {
-      print("not +4");
     }
     game.nextPlayer();
   }

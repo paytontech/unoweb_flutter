@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:unoweb_flutter/classes/Game.dart';
 import 'package:unoweb_flutter/classes/GameCard.dart';
 import 'package:unoweb_flutter/classes/Player.dart';
@@ -37,12 +38,18 @@ class _GameViewState extends State<GameView> {
             ),
             textAlign: TextAlign.left,
           ),
+          foregroundColor: Colors.white,
           leading: IconButton(
               onPressed: () {
                 Navigator.push(context,
                         MaterialPageRoute(builder: (context) => SettingsPage()))
-                    .then((value) {
-                  setState(() {});
+                    .then((value) async {
+                  SharedPreferences prefs =
+                      await SharedPreferences.getInstance();
+                  setState(() {
+                    widget.game.getPlayerWithUUID(myID).username =
+                        prefs.getString("username") ?? "Unknown";
+                  });
                 });
               },
               icon: Icon(
@@ -136,7 +143,7 @@ class _GameViewState extends State<GameView> {
                     });
                   },
                 ),
-                PlayersStatusUI(game: widget.game)
+                PlayersStatusUI(game: widget.game),
               ],
             ),
           ),

@@ -85,7 +85,7 @@ class Game {
 
   addBots(int botCount) {
     for (int i = playerCount; i < botCount; i++) {
-      Bot bot = Bot.bot(UselessGameUtils.randomCards(7));
+      Bot bot = Bot.bot(UselessGameUtils.randomCards(7), i + 1);
       this.players.add(bot);
     }
   }

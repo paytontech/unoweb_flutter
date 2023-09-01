@@ -7,7 +7,9 @@ import 'Player.dart';
 import 'GameCard.dart';
 
 class Bot extends Player {
-  Bot.bot(super.cards) : super.bot();
+  Bot.bot(List<GameCard> cards, int index) : super.bot(cards) {
+    this.username = "Bot ${index.toString()}";
+  }
   @override
   botPlay(Game game) async {
     print("bot attempting play..");

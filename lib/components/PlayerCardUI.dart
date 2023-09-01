@@ -107,15 +107,24 @@ class _PlayerCardState extends State<PlayerCard> {
                           Radius.circular(widget.canPlay ? 15 : 5)))),
               child: Column(
                 children: [
-                  Text(
-                    "${widget.card.humanReadableType}",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                        fontSize: 30,
-                        color: widget.isTurn
-                            ? Colors.white
-                            : UselessGameUtils.getCardColor(widget.card)),
-                  ),
+                  if ((!widget.card.special))
+                    Text(
+                      "${widget.card.humanReadableType}",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontSize: 30,
+                          color: widget.isTurn
+                              ? Colors.white
+                              : UselessGameUtils.getCardColor(widget.card)),
+                    ),
+                  if (widget.card.special)
+                    Icon(
+                      widget.card.type!.icon,
+                      color: widget.isTurn
+                          ? Colors.white
+                          : UselessGameUtils.getCardColor(widget.card),
+                      size: 30,
+                    ),
                   if (isColorblind && cardSymbol != null)
                     Image(
                       image: cardSymbol!.image,

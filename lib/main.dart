@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:unoweb_flutter/classes/Game.dart';
 import 'package:unoweb_flutter/classes/GameCard.dart';
 import 'package:unoweb_flutter/classes/Player.dart';
@@ -10,6 +11,7 @@ import 'dart:async';
 
 import 'package:unoweb_flutter/pages/GameOver.dart';
 import 'package:unoweb_flutter/pages/GameView.dart';
+import 'package:unoweb_flutter/pages/Onboarding.dart';
 
 import 'classes/HorizontalScrollBehavior.dart';
 
@@ -47,9 +49,30 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      update();
+    checkOnboarding().then((value) {
+      timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        update();
+      });
+      setUsername();
     });
+  }
+
+  Future<void> checkOnboarding() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool hasOnboarded = prefs.getBool("obcomplete") ?? false;
+    if (!hasOnboarded) {
+      Navigator.push(
+              context, MaterialPageRoute(builder: (context) => Onboarding()))
+          .then((value) async {
+        await prefs.setBool("obcomplete", value);
+      });
+    }
+  }
+
+  void setUsername() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String un = prefs.getString("username") ?? "Unknown";
+    game.players[0].username = un;
   }
 
   void update() {

@@ -113,4 +113,21 @@ extension TypeName on CardType {
         return "Wild +4";
     }
   }
+
+  IconData get icon {
+    switch (this) {
+      case CardType.reverse:
+        return Icons.repeat_rounded;
+      case CardType.skip:
+        return Icons.next_plan_rounded;
+      case CardType.wplus4:
+        return Icons.four_k_plus_rounded;
+      case CardType.plus2:
+        return Icons.exposure_plus_2_rounded;
+      case CardType.wnormal:
+        return Icons.view_cozy_rounded;
+      default:
+        return Icons.note;
+    }
+  }
 }

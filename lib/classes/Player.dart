@@ -14,7 +14,7 @@ class Player {
   String id = const Uuid().v1();
   List<GameCard> cards = [];
   bool bot = false;
-  String? username;
+  String username = "";
   String? uid;
   Player(this.cards) {
     this.bot = false;

@@ -33,6 +33,55 @@ class _SettingsPageState extends State<SettingsPage> {
     });
   }
 
+  Widget colorblindModeOption() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Text(
+              "Colorblind Mode",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+              textAlign: TextAlign.start,
+            ),
+            Text(
+              "Makes cards use shape values instead of color values.",
+              style: TextStyle(color: Colors.grey),
+              textAlign: TextAlign.start,
+            )
+          ],
+        ),
+        Switch(
+            value: colorblindMode,
+            onChanged: (b) async {
+              setColorblindMode(b);
+              getColorblindMode().then((value) {
+                setState(() {
+                  colorblindMode = value;
+                });
+              });
+            })
+      ],
+    );
+  }
+
+  Widget usernameOption() {
+    return Column(
+      children: [
+        TextField(
+          onChanged: (value) async {
+            final SharedPreferences prefs =
+                await SharedPreferences.getInstance();
+            prefs.setString("username", value);
+          },
+          decoration: InputDecoration(
+              border: OutlineInputBorder(), hintText: "Username"),
+        )
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,38 +91,12 @@ class _SettingsPageState extends State<SettingsPage> {
       body: Padding(
         padding: EdgeInsets.all(20),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Colorblind Mode",
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-                      textAlign: TextAlign.start,
-                    ),
-                    Text(
-                      "Makes cards use shape values instead of color values.",
-                      style: TextStyle(color: Colors.grey),
-                      textAlign: TextAlign.start,
-                    )
-                  ],
-                ),
-                Switch(
-                    value: colorblindMode,
-                    onChanged: (b) async {
-                      setColorblindMode(b);
-                      getColorblindMode().then((value) {
-                        setState(() {
-                          colorblindMode = value;
-                        });
-                      });
-                    })
-              ],
+            colorblindModeOption(),
+            usernameOption(),
+            const Text(
+              "v2.0.0a",
+              style: TextStyle(color: Colors.grey),
             )
           ],
         ),
