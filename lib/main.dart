@@ -11,6 +11,8 @@ import 'dart:async';
 import 'package:unoweb_flutter/pages/GameOver.dart';
 import 'package:unoweb_flutter/pages/GameView.dart';
 
+import 'classes/HorizontalScrollBehavior.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -25,6 +27,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.yellow),
         useMaterial3: true,
       ),
+      scrollBehavior: HorizontalScrollBehavior(),
       home: const MyHomePage(title: 'JustOne'),
     );
   }

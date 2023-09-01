@@ -42,6 +42,11 @@ class _WildSelectSheetState extends State<WildSelectSheet> {
   }
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Padding(
