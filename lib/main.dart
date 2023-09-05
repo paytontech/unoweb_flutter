@@ -56,8 +56,6 @@ class _MyHomePageState extends State<MyHomePage> {
         update();
       });
       setUsername();
-      MultiplayerController controller =
-          MultiplayerController('http://localhost:9123', game);
     });
   }
 
