@@ -1,6 +1,6 @@
 // ignore_for_file: prefer_const_constructors
 
-import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class AuthWelcome extends StatefulWidget {
@@ -158,16 +158,16 @@ class SignUpFormState extends State<SignUpForm> {
                   return;
                 }
                 try {
-                  FirebaseAuth.instance
-                      .createUserWithEmailAndPassword(
-                          email: email, password: password)
-                      .whenComplete(() => {
-                            FirebaseAuth.instance.currentUser
-                                ?.updateDisplayName(username)
-                                .whenComplete(() {
-                              Navigator.pop(context, true);
-                            }),
-                          });
+                  // FirebaseAuth.instance
+                  //     .createUserWithEmailAndPassword(
+                  //         email: email, password: password)
+                  //     .whenComplete(() => {
+                  //           FirebaseAuth.instance.currentUser
+                  //               ?.updateDisplayName(username)
+                  //               .whenComplete(() {
+                  //             Navigator.pop(context, true);
+                  //           }),
+                  //         });
                 } catch (err) {
                   print(err);
                   Navigator.pop(context, false);
@@ -241,10 +241,10 @@ class LoginFormState extends State<LoginForm> {
                   return;
                 }
                 try {
-                  FirebaseAuth.instance
-                      .signInWithEmailAndPassword(
-                          email: email, password: password)
-                      .whenComplete(() => {Navigator.pop(context, true)});
+                  // FirebaseAuth.instance
+                  //     .signInWithEmailAndPassword(
+                  //         email: email, password: password)
+                  //     .whenComplete(() => {Navigator.pop(context, true)});
                 } catch (err) {
                   print(err);
                   Navigator.pop(context, false);

@@ -2,8 +2,8 @@
 
 import 'dart:math';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'auth.dart';
@@ -20,20 +20,20 @@ class MPStartHome extends State<MPStart> {
   @override
   void initState() {
     super.initState();
-    FirebaseAuth.instance.authStateChanges().listen((User? user) {
-      print("user changed - not showing for security resons woogogoog");
-      if (user == null) {
-        setState(() {
-          mpdata["auth"] = false;
-        });
-      } else {
-        setState(() {
-          mpdata["auth"] = true;
-          mpdata["username"] = user.displayName;
-          mpdata["uid"] = user.uid;
-        });
-      }
-    });
+    // FirebaseAuth.instance.authStateChanges().listen((User? user) {
+    //   print("user changed - not showing for security resons woogogoog");
+    //   if (user == null) {
+    //     setState(() {
+    //       mpdata["auth"] = false;
+    //     });
+    //   } else {
+    //     setState(() {
+    //       mpdata["auth"] = true;
+    //       mpdata["username"] = user.displayName;
+    //       mpdata["uid"] = user.uid;
+    //     });
+    //   }
+    // });
   }
 
   @override
@@ -96,21 +96,21 @@ class MPStartHome extends State<MPStart> {
                                 child: ElevatedButton(
                                     onPressed: () {
                                       int code = 000000;
-                                      code = Random().nextInt(999999) + 100000;
-                                      FirebaseFirestore.instance
-                                          .collection("active")
-                                          .doc(code.toString())
-                                          .set({}).whenComplete(() {
-                                        mpdata["code"] = code;
-                                        //mpdate state key:
-                                        //0 = not in mp
-                                        //1 = host
-                                        //2 = player
-                                        mpdata["state"] = 1;
-                                        mpdata["mp"] = true;
-                                        print(mpdata.toString());
-                                        Navigator.pop(context, mpdata);
-                                      });
+                                      // code = Random().nextInt(999999) + 100000;
+                                      // FirebaseFirestore.instance
+                                      //     .collection("active")
+                                      //     .doc(code.toString())
+                                      //     .set({}).whenComplete(() {
+                                      //   mpdata["code"] = code;
+                                      //   //mpdate state key:
+                                      //   //0 = not in mp
+                                      //   //1 = host
+                                      //   //2 = player
+                                      //   mpdata["state"] = 1;
+                                      //   mpdata["mp"] = true;
+                                      //   print(mpdata.toString());
+                                      //   Navigator.pop(context, mpdata);
+                                      // });
                                     },
                                     child: Text("Host"))),
                             Padding(
@@ -157,7 +157,7 @@ class MPStartHome extends State<MPStart> {
                       if (mpdata['auth'])
                         ElevatedButton(
                             onPressed: () {
-                              FirebaseAuth.instance.signOut();
+                              // FirebaseAuth.instance.signOut();
                             },
                             child: Text("Sign Out"),
                             style: ElevatedButton.styleFrom(
@@ -215,28 +215,28 @@ class HostModalState extends State<HostModal> {
             },
             onSubmitted: (value) {
               try {
-                FirebaseFirestore.instance
-                    .collection("active")
-                    .doc(code.toString())
-                    .get()
-                    .then((value) {
-                  if (value.exists) {
-                    Map data = {};
-                    data["code"] = code;
-                    //mpdate state key:
-                    //0 = not in mp
-                    //1 = host
-                    //2 = player
-                    data["state"] = 2;
-                    data["mp"] = true;
-                    Navigator.pop(context, data);
-                  } else {
-                    print("doc does not exist");
-                    setState(() {
-                      errTxt = "Session does not exist!";
-                    });
-                  }
-                });
+                // FirebaseFirestore.instance
+                //     .collection("active")
+                //     .doc(code.toString())
+                //     .get()
+                //     .then((value) {
+                //   if (value.exists) {
+                //     Map data = {};
+                //     data["code"] = code;
+                //     //mpdate state key:
+                //     //0 = not in mp
+                //     //1 = host
+                //     //2 = player
+                //     data["state"] = 2;
+                //     data["mp"] = true;
+                //     Navigator.pop(context, data);
+                //   } else {
+                //     print("doc does not exist");
+                //     setState(() {
+                //       errTxt = "Session does not exist!";
+                //     });
+                //   }
+                // });
               } catch (err) {
                 print(err);
               }
@@ -250,28 +250,28 @@ class HostModalState extends State<HostModal> {
         ElevatedButton(
             onPressed: () {
               try {
-                FirebaseFirestore.instance
-                    .collection("active")
-                    .doc(code.toString())
-                    .get()
-                    .then((value) {
-                  if (value.exists) {
-                    Map data = {};
-                    data["code"] = code;
-                    //mpdate state key:
-                    //0 = not in mp
-                    //1 = host
-                    //2 = player
-                    data["state"] = 2;
-                    data["mp"] = true;
-                    Navigator.pop(context, data);
-                  } else {
-                    print("doc does not exist");
-                    setState(() {
-                      errTxt = "Session does not exist!";
-                    });
-                  }
-                });
+                // FirebaseFirestore.instance
+                //     .collection("active")
+                //     .doc(code.toString())
+                //     .get()
+                //     .then((value) {
+                //   if (value.exists) {
+                //     Map data = {};
+                //     data["code"] = code;
+                //     //mpdate state key:
+                //     //0 = not in mp
+                //     //1 = host
+                //     //2 = player
+                //     data["state"] = 2;
+                //     data["mp"] = true;
+                //     Navigator.pop(context, data);
+                //   } else {
+                //     print("doc does not exist");
+                //     setState(() {
+                //       errTxt = "Session does not exist!";
+                //     });
+                //   }
+                // });
               } catch (err) {
                 print(err);
               }

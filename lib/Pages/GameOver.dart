@@ -21,7 +21,7 @@ class _GameOverState extends State<GameOver> {
         children: [
           Text("You lose!", style: TextStyle(color: Colors.red, fontSize: 30)),
           Text(
-            "(${widget.game.winState.winner!.username ?? "unknown"} won)",
+            "(${widget.game.winState.winner!.username} won)",
             style: TextStyle(color: Colors.grey),
           )
         ],
@@ -32,13 +32,14 @@ class _GameOverState extends State<GameOver> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Game Over"),
-      ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [playerText()],
-      ),
-    );
+        appBar: AppBar(
+          title: Text("Game Over"),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [playerText()],
+          ),
+        ));
   }
 }
