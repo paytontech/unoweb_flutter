@@ -6,7 +6,7 @@ import 'dart:math';
 // import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'auth.dart';
+import 'Auth.dart';
 
 //stateful widget called MPStart
 class MPStart extends StatefulWidget {

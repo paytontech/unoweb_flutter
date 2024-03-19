@@ -32,7 +32,6 @@ class Bot extends Player {
         print("bot has available cards");
         var chosenCard = possibleCards[Random().nextInt(possibleCards.length)];
         print("selected card: ${chosenCard.humanReadableType}");
-        //TODO this is probably why bots can't play cards. we need to find the original type of the card and use THAT instead of GameCard
         var checkedCard = chosenCard.duplicate();
         cards.remove(chosenCard);
         cards.add(checkedCard);

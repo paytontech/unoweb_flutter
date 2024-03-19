@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:unoweb_flutter/classes/Game.dart';
-import 'package:flutter/services.dart' show rootBundle;
 
 class GameCard {
   CardColor color = CardColor.red;

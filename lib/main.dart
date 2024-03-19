@@ -10,7 +10,7 @@ import 'package:unoweb_flutter/components/StackCardUI.dart';
 import 'dart:async';
 import 'classes/MultiplayerController.dart';
 
-import 'package:unoweb_flutter/pages/GameOver.dart';
+import './Pages/GameOver.dart';
 import 'package:unoweb_flutter/pages/GameView.dart';
 import 'package:unoweb_flutter/pages/Onboarding.dart';
 
@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'JustOne',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.yellow),
+        colorScheme: ColorScheme.fromSeed(seedColor: Color.fromARGB(255, 209, 214, 232)),
         useMaterial3: true,
       ),
       scrollBehavior: HorizontalScrollBehavior(),
